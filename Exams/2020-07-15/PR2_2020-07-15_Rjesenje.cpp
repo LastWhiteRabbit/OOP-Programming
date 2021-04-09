@@ -42,14 +42,15 @@ class Kolekcija {
     int  _trenutno;
 public:
     Kolekcija() { _trenutno = 0; }
-  /*  Kolekcija(const Kolekcija& k):_trenutno(k._trenutno) {
-        for (int i = 0; i < _trenutno; i++) {
-            _elementi1[i] = new T1(k._elementi1[i]);
-            _elementi2[i] = new T2(k._elementi2[i]);
-        }
-    }*/
 
-    Kolekcija& operator= (const Kolekcija & k){
+    Kolekcija(const Kolekcija& k):_trenutno(k._trenutno) {
+        for (int i = 0; i < _trenutno; i++) {
+            _elementi1[i] = new T1(*k._elementi1[i]);
+            _elementi2[i] = new T2(*k._elementi2[i]);
+        }
+    }
+
+    Kolekcija& operator=(const Kolekcija & k){
         if (this != &k) {
             if (_trenutno != 0) {
                 for (int i = 0; i < _trenutno; i++) {
@@ -60,8 +61,8 @@ public:
         }
         _trenutno = k._trenutno;
         for (int i = 0; i < _trenutno; i++) {
-            _elementi1[i] = new T1(k._elementi1[i]);
-            _elementi2[i] = new T2(k._elementi2[i]);
+            _elementi1[i] = new T1(*k._elementi1[i]);
+            _elementi2[i] = new T2(*k._elementi2[i]);
         }
     
     return *this;
@@ -82,14 +83,16 @@ public:
     }
 
     void AddElement(T1 el1, T2 el2, int index) {
-         /*      
-        for (int i = index; i < _trenutno - 1; i++) {
-            _elementi1[i+1] = _elementi1[i];
-        }*/
+        T1* temp = nullptr;
 
-        _elementi1[index] = new T1(el1);
-        _elementi2[index] = new T2(el2);
-        _trenutno++;
+       /* _elementi1[index] = new T1(el1);
+        _elementi2[index] = new T2(el2);*/
+        for (int i = index; i < _trenutno - 1; i++) {
+            temp[i] = _elementi1[i];
+            _elementi1[i] = _elementi1[i + 1];
+            _elementi1[i + 1] = temp[i];
+        }
+       
     }
 
 
@@ -102,12 +105,12 @@ public:
                 _elementi1[i] = _elementi1[i + 1];
                 _elementi2[i] = _elementi2[i + 1];
             }
-            _elementi1[_trenutno - 1] = nullptr;
-            _elementi2[_trenutno - 1] = nullptr;
+           
             _trenutno--;
         }
             
     }
+
     T1& getElement1(int lokacija)const { return *_elementi1[lokacija]; }
     T2& getElement2(int lokacija)const { return *_elementi2[lokacija]; }
     int getTrenutno() { return _trenutno; }
@@ -116,6 +119,7 @@ public:
             COUT << obj.getElement1(i) << " " << obj.getElement2(i) << endl;
         return COUT;
     }
+    
 };
 class Datum {
     int* _dan, * _mjesec, * _godina;
@@ -230,13 +234,13 @@ const char* GetOdgovorNaDrugoPitanje() {
 }
 void main() {
 
-    cout << PORUKA;
-    cin.get();
+    //cout << PORUKA;
+    //cin.get();
 
-    // << GetOdgovorNaPrvoPitanje() << endl;
-    //cin.get();
-    //cout << GetOdgovorNaDrugoPitanje() << endl;
-    //cin.get();
+    //// << GetOdgovorNaPrvoPitanje() << endl;
+    ////cin.get();
+    ////cout << GetOdgovorNaDrugoPitanje() << endl;
+    ////cin.get();
 
     Datum   datum19062020(19, 6, 2020),
         datum20062020(20, 6, 2020),
@@ -297,8 +301,8 @@ void main() {
 
     cout << kolekcija1 << crt;
 
-    //Kolekcija<int, int> kolekcija2 = kolekcija1;
-    //cout << kolekcija1 << crt;
+   // Kolekcija<int, int> kolekcija2 = kolekcija1;
+   // cout << kolekcija1 << crt;
 
     ////na osnovu vrijednosti T1 mijenja vrijednost T2. 
     //kolekcija1[9] = 2;
