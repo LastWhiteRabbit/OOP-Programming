@@ -123,6 +123,11 @@ public:
         _mjesec = new int(mjesec);
         _godina = new int(godina);
     }
+    Datum(const Datum& d) {
+        _dan = new int(*d._dan);
+        _mjesec = new int(*d._mjesec);
+        _godina = new int(*d._godina);
+    }
     ~Datum() {
         delete _dan; _dan = nullptr;
         delete _mjesec; _mjesec = nullptr;
@@ -147,6 +152,7 @@ public:
         if (ocjena > 0)
             _ocjene.AddElement(ocjena, datum);
     }
+  //  Predmet(const Predmet& p): _naziv(GetNizKaraktera(p._naziv)),_ocjene(p._ocjene) { }
     ~Predmet() {
         delete[] _naziv; _naziv = nullptr;
     }
@@ -262,11 +268,11 @@ void main() {
         cout << err.what() << crt;
     }
 
-    ////parametri: nazivPredmeta, prva ocjena, datum
-    //Predmet Matematika("Matematika", 5, datum19062019),
-    //    Fizika("Fizika", 5, datum20062019),
-    //    Hemija("Hemija", 2, datum30062019),
-    //    Engleski("Engleski", 5, datum05072019);
+    //parametri: nazivPredmeta, prva ocjena, datum
+    Predmet Matematika("Matematika", 5, datum19062019),
+        Fizika("Fizika", 5, datum20062019),
+        Hemija("Hemija", 2, datum30062019),
+        Engleski("Engleski", 5, datum05072019);
 
     //Matematika.AddOcjena(3, datum05072019);
     //Matematika.AddOcjena(5, datum05072019);
