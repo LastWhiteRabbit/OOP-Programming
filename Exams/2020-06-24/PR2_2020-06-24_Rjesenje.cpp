@@ -128,6 +128,16 @@ public:
         _mjesec = new int(*d._mjesec);
         _godina = new int(*d._godina);
     }
+    Datum& operator=(const Datum& d) {
+        if (this != &d) {
+            _dan = new int(*d._dan);
+            _mjesec = new int(*d._mjesec);
+            _godina = new int(*d._godina);
+            
+        }
+        return *this;
+    }
+
     ~Datum() {
         delete _dan; _dan = nullptr;
         delete _mjesec; _mjesec = nullptr;
@@ -152,21 +162,22 @@ public:
         if (ocjena > 0)
             _ocjene.AddElement(ocjena, datum);
     }
-  //  Predmet(const Predmet& p): _naziv(GetNizKaraktera(p._naziv)),_ocjene(p._ocjene) { }
+    
+    Predmet(const Predmet& p): _naziv(GetNizKaraktera(p._naziv)),_ocjene(p._ocjene) { }
     ~Predmet() {
         delete[] _naziv; _naziv = nullptr;
     }
     void AddOcjena(int ocjena, Datum datum) {
         _ocjene.AddElement(ocjena, datum);
-    }
+    }   
     char* GetNaziv() { return _naziv; }
     Kolekcija<int, Datum>& GetOcjene() { return _ocjene; }
 
     friend ostream& operator<< (ostream& COUT, Predmet& obj) {
-        cout << "Naziv predmeta --->" << obj._naziv << endl;
+        cout << "Naziv predmeta--->" << obj._naziv << endl;
 
         for (int i = 0; i < obj._ocjene.getTrenutno(); i++) {
-            cout << "Ocjena--->" << obj._ocjene.getElement1(i) << "Datum--->" << obj._ocjene.getElement2(i) << endl;
+            cout << "Ocjena--->" << obj._ocjene.getElement1(i) << " Datum--->" << obj._ocjene.getElement2(i) << endl;
 
         }
         return COUT;
@@ -274,12 +285,12 @@ void main() {
         Hemija("Hemija", 2, datum30062019),
         Engleski("Engleski", 5, datum05072019);
 
-    //Matematika.AddOcjena(3, datum05072019);
-    //Matematika.AddOcjena(5, datum05072019);
+    Matematika.AddOcjena(3, datum05072019);
+    Matematika.AddOcjena(5, datum05072019);
 
-    //// ispisuje: naziv predmeta, ocjene (zajedno sa datumom polaganja) i prosjecnu ocjenu na predmetu
-    //// ukoliko predmet nema niti jednu ocjenu prosjecna treba biti 0
-    //cout << Matematika << endl;
+    // ispisuje: naziv predmeta, ocjene (zajedno sa datumom polaganja) i prosjecnu ocjenu na predmetu
+    // ukoliko predmet nema niti jednu ocjenu prosjecna treba biti 0
+    cout << Matematika << endl;
 
     //if (ValidirajEmail("text.text@edu.fit.ba"))
     //    cout << "Email validan" << crt;
