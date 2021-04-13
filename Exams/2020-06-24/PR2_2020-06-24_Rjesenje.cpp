@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <regex>
 
 using namespace std;
 
@@ -159,7 +160,7 @@ class Predmet {
 public:
     Predmet(const char* naziv = "", int ocjena = 0, Datum datum = Datum()) {
         _naziv = GetNizKaraktera(naziv);
-        if (ocjena > 0)
+        if (ocjena > 0 && ocjena<6)
             _ocjene.AddElement(ocjena, datum);
     }
     
@@ -174,12 +175,18 @@ public:
     Kolekcija<int, Datum>& GetOcjene() { return _ocjene; }
 
     friend ostream& operator<< (ostream& COUT, Predmet& obj) {
+
+        float prosjek=0;
+        
         cout << "Naziv predmeta--->" << obj._naziv << endl;
 
         for (int i = 0; i < obj._ocjene.getTrenutno(); i++) {
+            prosjek = prosjek + obj._ocjene.getElement1(i);
             cout << "Ocjena--->" << obj._ocjene.getElement1(i) << " Datum--->" << obj._ocjene.getElement2(i) << endl;
 
         }
+        
+        cout << "Prosjek za ovaj predmet je: " << prosjek / obj._ocjene.getTrenutno() << endl;
         return COUT;
     }
 };
@@ -200,6 +207,9 @@ public:
         return COUT;
     }
 };
+bool ValidirajEmail(string mail) {
+    return regex_match(mail, regex("[A-Za-z]{3-10}\.?[A-Za-z]{3-10}@(edu.fit|fit)\.(ba|com|org)"));
+}
 
 class Kandidat {
     char* _imePrezime;
@@ -235,6 +245,8 @@ const char* GetOdgovorNaDrugoPitanje() {
     cout << "Pitanje -> Na koji nacin se moze izbjeci pojavljivanje vise podobjekata bazne klase u slucaju visestrukog nasljedjivanja?\n";
     return "Odgovor -> OVDJE UNESITE VAS ODGOVOR";
 }
+
+
 
 void main() {
 
@@ -283,7 +295,7 @@ void main() {
     Predmet Matematika("Matematika", 5, datum19062019),
         Fizika("Fizika", 5, datum20062019),
         Hemija("Hemija", 2, datum30062019),
-        Engleski("Engleski", 5, datum05072019);
+        Engleski("Engleski", 3, datum05072019);
 
     Matematika.AddOcjena(3, datum05072019);
     Matematika.AddOcjena(5, datum05072019);
@@ -291,26 +303,27 @@ void main() {
     // ispisuje: naziv predmeta, ocjene (zajedno sa datumom polaganja) i prosjecnu ocjenu na predmetu
     // ukoliko predmet nema niti jednu ocjenu prosjecna treba biti 0
     cout << Matematika << endl;
+    
+    if (ValidirajEmail("text.text@edu.fit.ba"))
+        cout << "Email validan" << crt;
+    if (ValidirajEmail("texttext@edu.fit.ba"))
+        cout << "Email validan" << crt;
+    if (ValidirajEmail("texttext@fit.ba"))
+        cout << "Email validan" << crt;
+    if (ValidirajEmail("texttext@fit.com"))
+        cout << "Email validan" << crt;
+    if (ValidirajEmail("texttext@edu.fit.org"))
+        cout << "Email validan" << crt;
 
-    //if (ValidirajEmail("text.text@edu.fit.ba"))
-    //    cout << "Email validan" << crt;
-    //if (ValidirajEmail("texttext@edu.fit.ba"))
-    //    cout << "Email validan" << crt;
-    //if (ValidirajEmail("texttext@fit.ba"))
-    //    cout << "Email validan" << crt;
-    //if (ValidirajEmail("texttext@fit.com"))
-    //    cout << "Email validan" << crt;
-    //if (ValidirajEmail("texttext@edu.fit.org"))
-    //    cout << "Email validan" << crt;
+    /*
+    email adresa mora biti u formatu text.text (sa ili bez tacke),
+    dok domena moze biti fit.ba ili edu.fit.ba
+    nakon institucije (fit ili edu.fit), osim drzavne (.ba), dozvoljene su domene .com i .org.
+    za provjeru validnosti email adrese koristiti globalnu funkciju ValidirajEmail, a unutar nje regex metode.
+    validacija email adrese ce se vrsiti unutar konstruktora klase Kandidat, a u slucaju da nije validna
+    postaviti je na defaultnu adresu: notSet@edu.fit.ba
+    */
 
-    ///*
-    //email adresa mora biti u formatu text.text (sa ili bez tacke),
-    //dok domena moze biti fit.ba ili edu.fit.ba
-    //nakon institucije (fit ili edu.fit), osim drzavne (.ba), dozvoljene su domene .com i .org.
-    //za provjeru validnosti email adrese koristiti globalnu funkciju ValidirajEmail, a unutar nje regex metode.
-    //validacija email adrese ce se vrsiti unutar konstruktora klase Kandidat, a u slucaju da nije validna
-    //postaviti je na defaultnu adresu: notSet@edu.fit.ba
-    //*/
 
     //Kandidat jasmin("Jasmin Azemovic", "jasmin@fit.ba", "033 281 172");
     //Kandidat adel("Adel Handzic", "adel@edu.fit.ba", "033 281 170");
