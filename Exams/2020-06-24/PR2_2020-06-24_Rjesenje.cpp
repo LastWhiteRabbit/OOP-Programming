@@ -41,10 +41,10 @@ public:
         _elementi2 = nullptr;
         _omoguciDupliranje = omoguciDupliranje;
     }
-    Kolekcija(const Kolekcija& k):_trenutno(k._trenutno),_omoguciDupliranje(k._omoguciDupliranje) {
+    Kolekcija(const Kolekcija& k) :_trenutno(k._trenutno), _omoguciDupliranje(k._omoguciDupliranje) {
         _elementi1 = new T1[_trenutno];
         _elementi2 = new T2[_trenutno];
-        
+
         for (int i = 0; i < _trenutno; i++) {
             _elementi1[i] = k._elementi1[i];
             _elementi2[i] = k._elementi2[i];
@@ -75,12 +75,12 @@ public:
     }
 
     void AddElement(T1 el1, T2 el2) {
-        if (!_omoguciDupliranje) 
-            for (int i = 0; i < _trenutno; i++) 
+        if (!_omoguciDupliranje)
+            for (int i = 0; i < _trenutno; i++)
                 if ((_elementi1[i] == el1) || (_elementi2[i] == el2)) throw exception("Zabranjeno dupliranje");
-                  
-        T1* temp1 = new T1[_trenutno+1];
-        T2* temp2 = new T2[_trenutno+1];
+
+        T1* temp1 = new T1[_trenutno + 1];
+        T2* temp2 = new T2[_trenutno + 1];
 
         for (int i = 0; i < _trenutno; i++) {
             temp1[i] = _elementi1[i];
@@ -105,16 +105,16 @@ public:
         return COUT;
     }
 
-    Kolekcija<T1,T2> operator()(int OD, int DO){
-        if ((OD  < 0) || (DO <0) ) throw exception("Opseg ne smije biti manji od 0!");
+    Kolekcija<T1, T2> operator()(int OD, int DO) {
+        if ((OD < 0) || (DO < 0)) throw exception("Opseg ne smije biti manji od 0!");
         if ((OD > _trenutno) || (DO > _trenutno)) throw exception("Prekoracen opseg!");
 
-        Kolekcija<T1,T2> temp;
-        for (OD; OD <= DO; OD++) 
+        Kolekcija<T1, T2> temp;
+        for (OD; OD <= DO; OD++)
             temp.AddElement(_elementi1[OD], _elementi2[OD]);
         return temp;
     }
-   
+
 };
 class Datum {
     int* _dan, * _mjesec, * _godina;
@@ -134,7 +134,7 @@ public:
             _dan = new int(*d._dan);
             _mjesec = new int(*d._mjesec);
             _godina = new int(*d._godina);
-            
+
         }
         return *this;
     }
@@ -160,24 +160,24 @@ class Predmet {
 public:
     Predmet(const char* naziv = "", int ocjena = 0, Datum datum = Datum()) {
         _naziv = GetNizKaraktera(naziv);
-        if (ocjena > 0 && ocjena<6)
+        if (ocjena > 0 && ocjena < 6)
             _ocjene.AddElement(ocjena, datum);
     }
-    
-    Predmet(const Predmet& p): _naziv(GetNizKaraktera(p._naziv)),_ocjene(p._ocjene) { }
+
+    Predmet(const Predmet& p) : _naziv(GetNizKaraktera(p._naziv)), _ocjene(p._ocjene) { }
     ~Predmet() {
         delete[] _naziv; _naziv = nullptr;
     }
     void AddOcjena(int ocjena, Datum datum) {
         _ocjene.AddElement(ocjena, datum);
-    }   
+    }
     char* GetNaziv() { return _naziv; }
     Kolekcija<int, Datum>& GetOcjene() { return _ocjene; }
 
     friend ostream& operator<< (ostream& COUT, Predmet& obj) {
 
-        float prosjek=0;
-        
+        float prosjek = 0;
+
         cout << "Naziv predmeta--->" << obj._naziv << endl;
 
         for (int i = 0; i < obj._ocjene.getTrenutno(); i++) {
@@ -185,7 +185,7 @@ public:
             cout << "Ocjena--->" << obj._ocjene.getElement1(i) << " Datum--->" << obj._ocjene.getElement2(i) << endl;
 
         }
-        
+
         cout << "Prosjek za ovaj predmet je: " << prosjek / obj._ocjene.getTrenutno() << endl;
         return COUT;
     }
@@ -208,8 +208,9 @@ public:
     }
 };
 bool ValidirajEmail(string mail) {
-    return regex_match(mail, regex("[A-Za-z]{3-10}\.?[A-Za-z]{3-10}@(edu.fit|fit)\.(ba|com|org)"));
+    return regex_match(mail, regex("[A-Za-z]{3,10}\.?[a-zA-Z]{3,10}@(edu.fit|fit)\.(ba|com|org)"));
 }
+
 
 class Kandidat {
     char* _imePrezime;
@@ -219,7 +220,8 @@ class Kandidat {
 public:
     Kandidat(const char* imePrezime, string emailAdresa, string brojTelefona) {
         _imePrezime = GetNizKaraktera(imePrezime);
-        _emailAdresa = emailAdresa;
+        if (!ValidirajEmail(emailAdresa)) _emailAdresa = "notSet@edu.fit.ba";
+        else _emailAdresa = emailAdresa;
         _brojTelefona = brojTelefona;
     }
     ~Kandidat() {
@@ -303,7 +305,7 @@ void main() {
     // ispisuje: naziv predmeta, ocjene (zajedno sa datumom polaganja) i prosjecnu ocjenu na predmetu
     // ukoliko predmet nema niti jednu ocjenu prosjecna treba biti 0
     cout << Matematika << endl;
-    
+
     if (ValidirajEmail("text.text@edu.fit.ba"))
         cout << "Email validan" << crt;
     if (ValidirajEmail("texttext@edu.fit.ba"))
@@ -325,10 +327,12 @@ void main() {
     */
 
 
-    //Kandidat jasmin("Jasmin Azemovic", "jasmin@fit.ba", "033 281 172");
-    //Kandidat adel("Adel Handzic", "adel@edu.fit.ba", "033 281 170");
-    //Kandidat emailNotValid("Ime Prezime", "korisnik@klix.ba", "033 281 170");
-
+    Kandidat jasmin("Jasmin Azemovic", "jasmin@fit.ba", "033 281 172");
+    Kandidat adel("Adel Handzic", "adel@edu.fit.ba", "033 281 170");
+    Kandidat emailNotValid("Ime Prezime", "korisnik@klix.ba", "033 281 170");
+    cout << jasmin;
+    cout << adel;
+    cout << emailNotValid;
     ///*
     //uspjeh (tokom srednjoskolskog obrazovanja) se dodaje za svaki predmet na nivou razreda.
     //tom prilikom onemoguciti:
