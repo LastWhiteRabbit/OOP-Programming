@@ -189,6 +189,10 @@ public:
         cout << "Prosjek za ovaj predmet je: " << prosjek / obj._ocjene.getTrenutno() << endl;
         return COUT;
     }
+    bool operator==(const Predmet& p) {
+        return _naziv == p._naziv;
+    }
+
 };
 class Uspjeh {
     eRazred _razred;
@@ -226,6 +230,17 @@ public:
     }
     ~Kandidat() {
         delete[] _imePrezime; _imePrezime = nullptr;
+    }
+    bool AddPredmet(eRazred razred, Predmet &p, string napomena ) {
+
+      /*  for (int i = 0; i < _uspjeh.size(); i++) {
+            _uspjeh[i].GetPredmeti()->AddElement(p, napomena);
+            return true;
+        }*/
+        Uspjeh u(razred);
+        u.GetPredmeti()->AddElement(p, napomena);
+        _uspjeh.push_back(u);
+        return true;
     }
     friend ostream& operator<< (ostream& COUT, Kandidat& obj) {
         COUT << obj._imePrezime << " " << obj._emailAdresa << " " << obj._brojTelefona << endl;
@@ -328,22 +343,22 @@ void main() {
 
 
     Kandidat jasmin("Jasmin Azemovic", "jasmin@fit.ba", "033 281 172");
-    Kandidat adel("Adel Handzic", "adel@edu.fit.ba", "033 281 170");
+    Kandidat adel("Adel Handzic", "adelaa@edu.fit.ba", "033 281 170");
     Kandidat emailNotValid("Ime Prezime", "korisnik@klix.ba", "033 281 170");
     cout << jasmin;
     cout << adel;
     cout << emailNotValid;
-    ///*
-    //uspjeh (tokom srednjoskolskog obrazovanja) se dodaje za svaki predmet na nivou razreda.
-    //tom prilikom onemoguciti:
-    //- dodavanje istih (moraju biti identicne vrijednosti svih clanova) predmeta na nivou jednog razreda,
-    //- dodavanje predmeta kod kojih je prosjecna ocjena manja od 2.5
-    //- dodavanje vise od 5 predmeta na nivou jednog razreda
-    //razredi (predmeti ili uspjeh) ne moraju biti dodavani sortiranim redoslijedom (npr. prvo se moze dodati uspjeh za II razred, pa onda za I razred i sl.).
-    //Funkcija vraca true ili false u zavisnosti od (ne)uspjesnost izvrsenja
-    //*/
-    //if (jasmin.AddPredmet(DRUGI, Fizika, "Napomena 1"))
-    //    cout << "Predmet uspjesno dodan!" << crt;
+    /*
+    uspjeh (tokom srednjoskolskog obrazovanja) se dodaje za svaki predmet na nivou razreda.
+    tom prilikom onemoguciti:
+    - dodavanje istih (moraju biti identicne vrijednosti svih clanova) predmeta na nivou jednog razreda,
+    - dodavanje predmeta kod kojih je prosjecna ocjena manja od 2.5
+    - dodavanje vise od 5 predmeta na nivou jednog razreda
+    razredi (predmeti ili uspjeh) ne moraju biti dodavani sortiranim redoslijedom (npr. prvo se moze dodati uspjeh za II razred, pa onda za I razred i sl.).
+    Funkcija vraca true ili false u zavisnosti od (ne)uspjesnost izvrsenja
+    */
+    if (jasmin.AddPredmet(DRUGI, Fizika, "Napomena 1"))
+        cout << "Predmet uspjesno dodan!" << crt;
     //if (jasmin.AddPredmet(DRUGI, Hemija, "Napomena 2"))
     //    cout << "Predmet uspjesno dodan!" << crt;
     //if (jasmin.AddPredmet(PRVI, Engleski, "Napomena 3"))
@@ -353,7 +368,8 @@ void main() {
     ////ne treba dodati Matematiku jer je vec dodana u prvom razredu
     //if (jasmin.AddPredmet(PRVI, Matematika, "Napomena 5"))
     //    cout << "Predmet uspjesno dodan!" << crt;
-
+    cout << jasmin;
+   
     ///*nakon evidentiranja uspjeha na bilo kojem predmetu kandidatu se salje email sa porukom:
     //FROM:info@fit.ba
     //TO: emailKorisnika
