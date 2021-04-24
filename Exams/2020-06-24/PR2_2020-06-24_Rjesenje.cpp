@@ -201,6 +201,10 @@ class Uspjeh {
 public:
     Uspjeh(eRazred razred = PRVI) {
         _razred = razred;
+        _polozeniPredmeti = new Kolekcija<Predmet, string>;
+    }
+    Uspjeh(const Uspjeh& u):_razred(u._razred) {
+        _polozeniPredmeti = new Kolekcija<Predmet, string>(*u._polozeniPredmeti);
     }
     ~Uspjeh() { delete _polozeniPredmeti; _polozeniPredmeti = nullptr; }
 
@@ -228,6 +232,9 @@ public:
         else _emailAdresa = emailAdresa;
         _brojTelefona = brojTelefona;
     }
+ /*   Kandidat(const Kandidat& k):_imePrezime(GetNizKaraktera(k._imePrezime)),_emailAdresa(k._emailAdresa),
+                                _brojTelefona(k._brojTelefona),_uspjeh(k._uspjeh)
+    {}*/
     ~Kandidat() {
         delete[] _imePrezime; _imePrezime = nullptr;
     }
@@ -252,6 +259,7 @@ public:
     string GetEmail() { return _emailAdresa; }
     string GetBrojTelefona() { return _brojTelefona; }
     char* GetImePrezime() { return _imePrezime; }
+
 
 };
 const char* GetOdgovorNaPrvoPitanje() {
@@ -368,7 +376,7 @@ void main() {
     ////ne treba dodati Matematiku jer je vec dodana u prvom razredu
     //if (jasmin.AddPredmet(PRVI, Matematika, "Napomena 5"))
     //    cout << "Predmet uspjesno dodan!" << crt;
-    cout << jasmin;
+        cout << jasmin;
    
     ///*nakon evidentiranja uspjeha na bilo kojem predmetu kandidatu se salje email sa porukom:
     //FROM:info@fit.ba
