@@ -165,6 +165,17 @@ public:
     }
 
     Predmet(const Predmet& p) : _naziv(GetNizKaraktera(p._naziv)), _ocjene(p._ocjene) { }
+
+    Predmet& operator=(const Predmet& drugi)
+    {
+        if (this != &drugi)
+        {
+            delete[] _naziv;
+            _naziv = GetNizKaraktera(drugi._naziv);
+            _ocjene = drugi._ocjene;
+        }
+        return *this;
+    }
     ~Predmet() {
         delete[] _naziv; _naziv = nullptr;
     }
@@ -367,15 +378,15 @@ void main() {
     */
     if (jasmin.AddPredmet(DRUGI, Fizika, "Napomena 1"))
         cout << "Predmet uspjesno dodan!" << crt;
-    //if (jasmin.AddPredmet(DRUGI, Hemija, "Napomena 2"))
-    //    cout << "Predmet uspjesno dodan!" << crt;
-    //if (jasmin.AddPredmet(PRVI, Engleski, "Napomena 3"))
-    //    cout << "Predmet uspjesno dodan!" << crt;
-    //if (jasmin.AddPredmet(PRVI, Matematika, "Napomena 4"))
-    //    cout << "Predmet uspjesno dodan!" << crt;
-    ////ne treba dodati Matematiku jer je vec dodana u prvom razredu
-    //if (jasmin.AddPredmet(PRVI, Matematika, "Napomena 5"))
-    //    cout << "Predmet uspjesno dodan!" << crt;
+    if (jasmin.AddPredmet(DRUGI, Hemija, "Napomena 2"))
+        cout << "Predmet uspjesno dodan!" << crt;
+    if (jasmin.AddPredmet(PRVI, Engleski, "Napomena 3"))
+        cout << "Predmet uspjesno dodan!" << crt;
+    if (jasmin.AddPredmet(PRVI, Matematika, "Napomena 4"))
+        cout << "Predmet uspjesno dodan!" << crt;
+    //ne treba dodati Matematiku jer je vec dodana u prvom razredu
+    if (jasmin.AddPredmet(PRVI, Matematika, "Napomena 5"))
+        cout << "Predmet uspjesno dodan!" << crt;
         cout << jasmin;
    
     ///*nakon evidentiranja uspjeha na bilo kojem predmetu kandidatu se salje email sa porukom:
