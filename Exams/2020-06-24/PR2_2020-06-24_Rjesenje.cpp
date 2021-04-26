@@ -157,6 +157,8 @@ class Predmet {
     char* _naziv;
     //int se odnosi na ocjenu u opsegu od 1 – 5, a datum na momenat postizanja ocjene
     Kolekcija<int, Datum> _ocjene;
+
+
 public:
     Predmet(const char* naziv = "", int ocjena = 0, Datum datum = Datum()) {
         _naziv = GetNizKaraktera(naziv);
@@ -185,6 +187,14 @@ public:
     char* GetNaziv() { return _naziv; }
     Kolekcija<int, Datum>& GetOcjene() { return _ocjene; }
 
+    float Prosjek() {
+        float prosjek = 0;
+        for (int i = 0; i < _ocjene.getTrenutno(); i++) {
+            prosjek = prosjek + _ocjene.getElement1(i);
+        }
+        return  prosjek / _ocjene.getTrenutno();
+    }
+
     friend ostream& operator<< (ostream& COUT, Predmet& obj) {
 
         float prosjek = 0;
@@ -201,7 +211,7 @@ public:
         return COUT;
     }
     bool operator==(const Predmet& p) {
-        return _naziv == p._naziv;
+        return strcmp(_naziv,p._naziv)==0;
     }
 
 };
@@ -251,10 +261,18 @@ public:
     }
     bool AddPredmet(eRazred razred, Predmet &p, string napomena ) {
 
-      /*  for (int i = 0; i < _uspjeh.size(); i++) {
-            _uspjeh[i].GetPredmeti()->AddElement(p, napomena);
-            return true;
-        }*/
+        for (int i = 0; i < _uspjeh.size(); i++) {
+           
+            if (_uspjeh[i].GetERazred() == razred)
+                for (int j = 0; j < _uspjeh[i].GetPredmeti()->getTrenutno(); j++) {
+                    if (_uspjeh[i].GetPredmeti()->getElement1(j) == p)  return false;
+                }
+            if ((p.Prosjek()) < 2.5) return false;
+
+            if (_uspjeh[i].GetPredmeti()->getTrenutno() >= 5) return false;
+           
+            
+        }
         Uspjeh u(razred);
         u.GetPredmeti()->AddElement(p, napomena);
         _uspjeh.push_back(u);
