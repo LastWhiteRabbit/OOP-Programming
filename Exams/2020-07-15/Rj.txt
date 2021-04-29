@@ -42,35 +42,7 @@ class Kolekcija {
     int  _trenutno;
 public:
     Kolekcija() { _trenutno = 0; }
-    Kolekcija(const Kolekcija& original) : _trenutno(original._trenutno)
-    {
-        for (int i = 0; i < _trenutno; i++)
-        {
-            _elementi1[i] = new T1(*original._elementi1[i]);
-            _elementi2[i] = new T2(*original._elementi2[i]);
-        }
-    }
-    Kolekcija& operator=(const Kolekcija& druga)
-    {
-        if (this != &druga)
-        {
-            if (_trenutno != 0)
-            {
-                for (int i = 0; i < _trenutno; i++)
-                {
-                    delete _elementi1[i];
-                    delete _elementi2[i];
-                }
-            }
-            _trenutno = druga._trenutno;
-            for (int i = 0; i < _trenutno; i++)
-            {
-                _elementi1[i] = new T1(*druga._elementi1[i]);
-                _elementi2[i] = new T2(*druga._elementi2[i]);
-            }
-        }
-        return *this;
-    }
+  
     ~Kolekcija() {
         for (size_t i = 0; i < _trenutno; i++) {
             delete _elementi1[i]; _elementi1[i] = nullptr;
@@ -87,19 +59,18 @@ public:
     }
 
     void AddElement(T1 el1, T2 el2, int lokacija) {
+        if (_trenutno >= max) throw exception("Prekoracenje opsega!");
+        _elementi1[_trenutno] = new T1; // Alociramo memoriju za zadnji element da se ne bi desio runtime error
+        _elementi2[_trenutno] = new T2;
+        for (int i = _trenutno; i >= lokacija; i--) {
 
-        T1* temp1 = new T1[_trenutno - lokacija];
-        T2* temp2 = new T2[_trenutno - lokacija];
-        for (int i = lokacija; i < _trenutno; i++) {
-            temp1[i] = _elementi1[i];
-            temp2[i] = _elementi2[i];
+            *_elementi1[i] = *_elementi1[i - 1];
+            *_elementi2[i] = *_elementi2[i - 1];
         }
-        _elementi1[_trenutno] = new T1(el1);
-        _elementi2[_trenutno++] = new T2(el2);
-        for (int i = lokacija + 1; i < _trenutno; i++) {
-            _elementi1[i] = temp1[i];
-            _elementi2[i] = temp2[i];
-        }
+        *_elementi1[lokacija] = el1; // Na lokaciju dodajemo novi par elemenata
+        *_elementi2[lokacija] = el2;
+        _trenutno++;
+        
 
     }
 
