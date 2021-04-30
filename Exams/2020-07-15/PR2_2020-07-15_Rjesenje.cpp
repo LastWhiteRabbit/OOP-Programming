@@ -1,6 +1,6 @@
-#include <iostream>;
-#include <vector>;
-#include <string>;
+#include <iostream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -43,83 +43,71 @@ class Kolekcija {
 public:
     Kolekcija() { _trenutno = 0; }
 
-    Kolekcija(const Kolekcija& k):_trenutno(k._trenutno) {
+    Kolekcija(const Kolekcija& k): _trenutno(k._trenutno) {       
         for (int i = 0; i < _trenutno; i++) {
             _elementi1[i] = new T1(*k._elementi1[i]);
             _elementi2[i] = new T2(*k._elementi2[i]);
         }
     }
-
-    Kolekcija& operator=(const Kolekcija & k){
-        if (this != &k) {
-            if (_trenutno != 0) {
-                for (int i = 0; i < _trenutno; i++) {
-                    delete _elementi1[i];
-                    delete _elementi2[i];
-                }
-            }
-        }
-        _trenutno = k._trenutno;
-        for (int i = 0; i < _trenutno; i++) {
-            _elementi1[i] = new T1(*k._elementi1[i]);
-            _elementi2[i] = new T2(*k._elementi2[i]);
-        }
-    
-    return *this;
-    }
+  
     ~Kolekcija() {
         for (size_t i = 0; i < _trenutno; i++) {
             delete _elementi1[i]; _elementi1[i] = nullptr;
             delete _elementi2[i]; _elementi2[i] = nullptr;
         }
     }
-    void AddElement(T1 el1, T2 el2) {
 
-        if (_trenutno >= max) throw exception("Maksimum kolekcije!");
-
+    void AddElement( T1 el1, T2 el2) {
+        if (_trenutno>=max) throw exception("Prekoracenje opsega!");
+        //ako nema pokazivaca onda ide samo _elementi1[_trenutno]=el1 jer je rijec o statickom nizu,
+        //u suprotnom se mora napraviti alokacija memorije za taj novi clan tj. el1
         _elementi1[_trenutno] = new T1(el1);
-        _elementi2[_trenutno] = new T2(el2);
+        _elementi2[_trenutno++] = new T2(el2);
+    }
+
+    void AddElement(T1 el1, T2 el2, int lokacija) {
+    
+        if (_trenutno >= max) throw exception("Prekoracenje opsega!");
+
+        _elementi1[_trenutno] = new T1;
+        _elementi2[_trenutno] = new T2;
+
+        for (int i = _trenutno; i >= lokacija; i--) {
+
+            *_elementi1[i] = *_elementi1[i - 1];
+            *_elementi2[i] = *_elementi2[i - 1];
+        }
+        
+        *_elementi1[lokacija] = el1;
+        *_elementi2[lokacija] = el2;
         _trenutno++;
+
     }
 
-    void AddElement(T1 el1, T2 el2, int index) {
-        T1* temp = nullptr;
 
-       /* _elementi1[index] = new T1(el1);
-        _elementi2[index] = new T2(el2);*/
-        for (int i = index; i < _trenutno - 1; i++) {
-            temp[i] = _elementi1[i];
+    void RemoveAt(int lokacija) {   
+        for (int i = lokacija; i < _trenutno-1; i++) {
             _elementi1[i] = _elementi1[i + 1];
-            _elementi1[i + 1] = temp[i];
-        }
-       
+            _elementi2[i] = _elementi2[i + 1];
+        }  
+        _trenutno--;
     }
-
-
-    void RemoveAt(int index) {
-        if (index > 0 && index < _trenutno)
-        {
-            delete _elementi1[index];
-            delete _elementi2[index];
-            for (int i = index; i < _trenutno - 1; i++) {
-                _elementi1[i] = _elementi1[i + 1];
-                _elementi2[i] = _elementi2[i + 1];
-            }
-           
-            _trenutno--;
-        }
-            
-    }
-
     T1& getElement1(int lokacija)const { return *_elementi1[lokacija]; }
     T2& getElement2(int lokacija)const { return *_elementi2[lokacija]; }
     int getTrenutno() { return _trenutno; }
+
+    T2& operator[](const T1 vrijednost) {
+        for (int i = 0; i < _trenutno; i++) {
+            if (*_elementi1[i] == vrijednost) {
+                return *_elementi2[i];
+            }
+        }
+    }
     friend ostream& operator<< (ostream& COUT, const Kolekcija& obj) {
         for (size_t i = 0; i < obj._trenutno; i++)
             COUT << obj.getElement1(i) << " " << obj.getElement2(i) << endl;
         return COUT;
     }
-    
 };
 class Datum {
     int* _dan, * _mjesec, * _godina;
@@ -128,6 +116,11 @@ public:
         _dan = new int(dan);
         _mjesec = new int(mjesec);
         _godina = new int(godina);
+    }
+    Datum(const Datum& d) {
+        _dan = new int(*d._dan);
+        _mjesec = new int(*d._mjesec);
+        _godina=new int(*d._godina);
     }
     ~Datum() {
         delete _dan; _dan = nullptr;
@@ -153,12 +146,20 @@ public:
         delete[] _naziv; _naziv = nullptr;
         delete _ocjene; _ocjene = nullptr;
     }
+
+    bool AddOcjena(const int ocjena, const Datum& datum) {
+        _ocjene->AddElement(ocjena, datum);
+        return true;
+    }
     char* GetNaziv() { return _naziv; }
     Kolekcija<int, Datum, brojTehnika>& GetOcjene() { return *_ocjene; }
     friend ostream& operator<< (ostream& COUT, const Tehnika& obj) {
-        COUT <<"Naziv--->"<< obj._naziv << endl;
-        for (size_t i = 0; i <obj._ocjene->getTrenutno() ; i++)
-            COUT << "Ocjena--->"<<obj._ocjene->getElement1(i)<<"Ocjenjen datuma--->"<<obj._ocjene->getElement2(i);
+        COUT << obj._naziv << endl;
+        COUT << "----Ocjene----"  << endl;
+        for (int i = 0; i < obj._ocjene->getTrenutno();i++) {
+            COUT << "Datuma " << obj._ocjene->getElement2(i);
+            COUT << " je ocjenjen sa:" << obj._ocjene->getElement1(i) << endl;
+        }
         return COUT;
     }
 };
@@ -190,9 +191,10 @@ class Korisnik {
     char* _imePrezime;
     string _emailAdresa;
     string _lozinka;
-    bool ValidirajLozinku(string lozinka) {
+
+    bool ValidirajLozinku(string _lozinka) {
         return true;
-    };
+    }
 public:
     Korisnik(const char* imePrezime, string emailAdresa, string lozinka)
     {
@@ -209,7 +211,7 @@ public:
 class KaratePolaznik: public Korisnik {
     vector<Polaganje> _polozeniPojasevi;
 public:
-    KaratePolaznik(const char* imePrezime, string emailAdresa, string lozinka): Korisnik(imePrezime,  emailAdresa,  lozinka) {
+    KaratePolaznik(const char* imePrezime, string emailAdresa, string lozinka):Korisnik(imePrezime,emailAdresa,lozinka) {
     }
     ~KaratePolaznik() {
         cout << crt << "DESTRUKTOR -> KaratePolaznik" << crt;
@@ -237,10 +239,10 @@ void main() {
     //cout << PORUKA;
     //cin.get();
 
-    //// << GetOdgovorNaPrvoPitanje() << endl;
-    ////cin.get();
-    ////cout << GetOdgovorNaDrugoPitanje() << endl;
-    ////cin.get();
+    //cout << GetOdgovorNaPrvoPitanje() << endl;
+    //cin.get();
+    //cout << GetOdgovorNaDrugoPitanje() << endl;
+    //cin.get();
 
     Datum   datum19062020(19, 6, 2020),
         datum20062020(20, 6, 2020),
@@ -301,44 +303,44 @@ void main() {
 
     cout << kolekcija1 << crt;
 
-   // Kolekcija<int, int> kolekcija2 = kolekcija1;
-   // cout << kolekcija1 << crt;
+    Kolekcija<int, int> kolekcija2 = kolekcija1;
+    cout << kolekcija1 << crt;
 
-    ////na osnovu vrijednosti T1 mijenja vrijednost T2. 
-    //kolekcija1[9] = 2;
-    ///* npr.ako unutar kolekcije postoje elementi:
-    //0 0
-    //9 9
-    //1 1
-    //2 2
-    //3 3
-    //nakon promjene vrijednosti sadrzaj kolekcije ce biti sljedeci
-    //0 0
-    //9 2
-    //1 1
-    //2 2
-    //3 3
-    //*/
+    //na osnovu vrijednosti T1 mijenja vrijednost T2. 
+    kolekcija1[9] = 2;
+    /* npr.ako unutar kolekcije postoje elementi:
+    0 0
+    9 9
+    1 1
+    2 2
+    3 3
+    nakon promjene vrijednosti sadrzaj kolekcije ce biti sljedeci
+    0 0
+    9 2
+    1 1
+    2 2
+    3 3
+    */
+    
+    Tehnika choku_zuki("choku_zuki"),
+        gyaku_zuki("gyaku_zuki"),
+        kizami_zuki("kizami_zuki"),
+        oi_zuki("oi_zuki");
 
-    //Tehnika choku_zuki("choku_zuki"),
-    //    gyaku_zuki("gyaku_zuki"),
-    //    kizami_zuki("kizami_zuki"),
-    //    oi_zuki("oi_zuki");
+    /*svaka tehnika moze imati vise ocjena tj. moze se polagati u vise navrata.
+        -   razmak izmedju polaganja dvije tehnike mora biti najmanje 3 dana
+        -   nije dozvoljeno dodati ocjenu sa ranijim datumom u odnosu na vec evidentirane (bez obzira sto je stariji od 3 dana)
+    */
+    if (choku_zuki.AddOcjena(1, datum19062020))
+        cout << "Ocjena evidentirana!" << endl;
+    if (!choku_zuki.AddOcjena(5, datum20062020))
+        cout << "Ocjena NIJE evidentirana!" << endl;
+    if (choku_zuki.AddOcjena(5, datum30062020))
+        cout << "Ocjena evidentirana!" << endl;
 
-    ///*svaka tehnika moze imati vise ocjena tj. moze se polagati u vise navrata.
-    //    -   razmak izmedju polaganja dvije tehnike mora biti najmanje 3 dana
-    //    -   nije dozvoljeno dodati ocjenu sa ranijim datumom u odnosu na vec evidentirane (bez obzira sto je stariji od 3 dana)
-    //*/
-    //if (choku_zuki.AddOcjena(1, datum19062020))
-    //    cout << "Ocjena evidentirana!" << endl;
-    //if (!choku_zuki.AddOcjena(5, datum20062020))
-    //    cout << "Ocjena NIJE evidentirana!" << endl;
-    //if (choku_zuki.AddOcjena(5, datum30062020))
-    //    cout << "Ocjena evidentirana!" << endl;
-
-    ///* ispisuje: naziv tehnike, ocjene (zajedno sa datumom) i prosjecnu ocjenu za tu tehniku
-    //   ukoliko tehnika nema niti jednu ocjenu prosjecna treba biti 0*/
-    //cout << choku_zuki << endl;
+    /* ispisuje: naziv tehnike, ocjene (zajedno sa datumom) i prosjecnu ocjenu za tu tehniku
+       ukoliko tehnika nema niti jednu ocjenu prosjecna treba biti 0*/
+    cout << choku_zuki << endl;
 
     //if (ValidirajLozinku("john4Do*e"))
     //    cout << "OK" << crt;
