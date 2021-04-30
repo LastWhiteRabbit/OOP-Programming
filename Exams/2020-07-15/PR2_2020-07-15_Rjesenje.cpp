@@ -127,12 +127,18 @@ public:
         delete _mjesec; _mjesec = nullptr;
         delete _godina; _godina = nullptr;
     }
+    int brojDana() {
+        return *_dan + *_mjesec * 30 + *_godina * 365;
+    }
+
     friend ostream& operator<< (ostream& COUT, const Datum& obj) {
         COUT << *obj._dan << "." << *obj._mjesec << "." << *obj._godina;
         return COUT;
     }
 };
-
+int razlikaDana(Datum& d1, Datum& d2) {
+    return abs(d1.brojDana() - d2.brojDana());
+}
 class Tehnika {
     char* _naziv;
     //int se odnosi na ocjenu u opsegu od 1 – 5, a Datum na datum kada je ocijenjena odredjena tehnika 
@@ -147,7 +153,11 @@ public:
         delete _ocjene; _ocjene = nullptr;
     }
 
-    bool AddOcjena(const int ocjena, const Datum& datum) {
+    bool AddOcjena(const int ocjena,  Datum& datum) {
+        int trenutno = _ocjene->getTrenutno();
+        for (int i = 0; i < trenutno; i++) {
+            if(trenutno!=0 && (razlikaDana(datum,_ocjene->getElement2(trenutno-1)) < 3 )) return false;
+        }
         _ocjene->AddElement(ocjena, datum);
         return true;
     }
@@ -283,7 +293,6 @@ void main() {
     3 3
     */
 
-    cout << kolekcija1 << crt;
 
     kolekcija1.AddElement(9, 9, 2);
     /*funkciji AddElement se, kao treci parametar, moze proslijediti i lokacija na koju se dodaju
