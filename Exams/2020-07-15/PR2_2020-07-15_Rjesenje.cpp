@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <regex>
 
 using namespace std;
 
@@ -218,15 +219,18 @@ public:
         return COUT;
     }
 };
+bool ValidirajLozinku(string sifra) {
+    return regex_match(sifra, regex("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*\\W)[A-Za-z\\d\\W]{7,}"));
+}
 
 class Korisnik {
     char* _imePrezime;
     string _emailAdresa;
     string _lozinka;
 
-    bool ValidirajLozinku(string _lozinka) {
+  /*  bool ValidirajLozinku(string _lozinka) {
         return true;
-    }
+    }*/
 public:
     Korisnik(const char* imePrezime, string emailAdresa, string lozinka)
     {
@@ -234,7 +238,7 @@ public:
         _emailAdresa = emailAdresa;
         _lozinka = ValidirajLozinku(lozinka) ? lozinka : NIJE_VALIDNA;
     }
-    ~Korisnik() { delete[] _imePrezime; _imePrezime = nullptr; }
+    virtual ~Korisnik() { delete[] _imePrezime; _imePrezime = nullptr; }
     string GetEmail() { return _emailAdresa; }
     string GetLozinka() { return _lozinka; }
     char* GetImePrezime() { return _imePrezime; }
@@ -245,8 +249,12 @@ class KaratePolaznik: public Korisnik {
 public:
     KaratePolaznik(const char* imePrezime, string emailAdresa, string lozinka):Korisnik(imePrezime,emailAdresa,lozinka) {
     }
-    ~KaratePolaznik() {
+    virtual ~KaratePolaznik() {
         cout << crt << "DESTRUKTOR -> KaratePolaznik" << crt;
+    }
+    bool AddTehniku(Pojas p, Tehnika& t) {
+    
+    
     }
     friend ostream& operator<< (ostream& COUT, KaratePolaznik& obj) {
         COUT << obj.GetImePrezime() << " " << obj.GetEmail() << " " << obj.GetLozinka() << endl;
@@ -256,6 +264,7 @@ public:
     }
     vector<Polaganje>& GetPolozeniPojasevi() { return _polozeniPojasevi; }
 };
+
 
 
 const char* GetOdgovorNaPrvoPitanje() {
@@ -375,48 +384,48 @@ void main() {
        ukoliko tehnika nema niti jednu ocjenu prosjecna treba biti 0*/
     cout << choku_zuki << endl;
 
-    //if (ValidirajLozinku("john4Do*e"))
-    //    cout << "OK" << crt;
-    //if (!ValidirajLozinku("john4Doe"))
-    //    cout << "Specijalni znak?" << crt;
-    //if (!ValidirajLozinku("jo*4Da"))
-    //    cout << "7 znakova?" << crt;
-    //if (!ValidirajLozinku("4jo-hnoe"))
-    //    cout << "Veliko slovo?" << crt;
-    //if (ValidirajLozinku("@john2Doe"))
-    //    cout << "OK" << crt;
+    if (ValidirajLozinku("john4Do*e"))
+        cout << "OK" << crt;
+    if (!ValidirajLozinku("john4Doe"))
+        cout << "Specijalni znak?" << crt;
+    if (!ValidirajLozinku("jo*4Da"))
+        cout << "7 znakova?" << crt;
+    if (!ValidirajLozinku("4jo-hnoe"))
+        cout << "Veliko slovo?" << crt;
+    if (ValidirajLozinku("@john2Doe"))
+        cout << "OK" << crt;
 
-    ///*
-    //za autentifikaciju svaki korisnik mora posjedovati lozinku koja sadrzi:
-    //-   najmanje 7 znakova
-    //-   velika i mala slova
-    //-   najmanje jedan broj
-    //-   najmanje jedan specijalni znak
-    //za provjeru validnosti lozinke koristiti globalnu funkciju ValidirajLozinku, a unutar nje regex metode.
-    //validacija lozinke se vrsi unutar konstruktora klase Korisnik, a u slucaju da nije validna
-    //postaviti je na podrazumijevanu vrijednost: <VRIJEDNOST_NIJE_VALIDNA>
-    //*/
+    /*
+    za autentifikaciju svaki korisnik mora posjedovati lozinku koja sadrzi:
+    -   najmanje 7 znakova
+    -   velika i mala slova
+    -   najmanje jedan broj
+    -   najmanje jedan specijalni znak
+    za provjeru validnosti lozinke koristiti globalnu funkciju ValidirajLozinku, a unutar nje regex metode.
+    validacija lozinke se vrsi unutar konstruktora klase Korisnik, a u slucaju da nije validna
+    postaviti je na podrazumijevanu vrijednost: <VRIJEDNOST_NIJE_VALIDNA>
+    */
 
-    //Korisnik* jasmin = new KaratePolaznik("Jasmin Azemovic", "jasmin@karate.ba", "j@sm1N*");
-    //Korisnik* adel = new KaratePolaznik("Adel Handzic", "adel@edu.karate.ba", "4Ade1*H");
-    //Korisnik* emailNijeValidan = new KaratePolaznik("John Doe", "john.doe@google.com", "johndoe");
+    Korisnik* jasmin = new KaratePolaznik("Jasmin Azemovic", "jasmin@karate.ba", "j@sm1N*");
+    Korisnik* adel = new KaratePolaznik("Adel Handzic", "adel@edu.karate.ba", "4Ade1*H");
+    Korisnik* emailNijeValidan = new KaratePolaznik("John Doe", "john.doe@google.com", "johndoe");
 
-    ///*
-    //sve tehnike na nivou jednog pojasa (ZUTI, ZELENI ... ) se evidentiraju unutar istog objekta tipa Polaganje,
-    //tom prilikom onemoguciti:
-    //- dodavanje istih (moraju biti identicne vrijednosti svih atributa) tehnika na nivou jednog pojasa,
-    //- dodavanje tehnika za visi pojas ako prethodni pojas nema evidentirane najmanje 3 tehnike ili nema prosjecnu ocjenu svih tehnika vecu od 3.5
-    //(onemoguciti dodavanje tehnike za NARANDZASTI ako ne postoji najmanje 3 tehnike za ZUTI pojas ili njihov prosjek nije veci od 3.5)
-    //funkcija vraca true ili false u zavisnosti od (ne)uspjesnost izvrsenja
-    //*/
+    /*
+    sve tehnike na nivou jednog pojasa (ZUTI, ZELENI ... ) se evidentiraju unutar istog objekta tipa Polaganje,
+    tom prilikom onemoguciti:
+    - dodavanje istih (moraju biti identicne vrijednosti svih atributa) tehnika na nivou jednog pojasa,
+    - dodavanje tehnika za visi pojas ako prethodni pojas nema evidentirane najmanje 3 tehnike ili nema prosjecnu ocjenu svih tehnika vecu od 3.5
+    (onemoguciti dodavanje tehnike za NARANDZASTI ako ne postoji najmanje 3 tehnike za ZUTI pojas ili njihov prosjek nije veci od 3.5)
+    funkcija vraca true ili false u zavisnosti od (ne)uspjesnost izvrsenja
+    */
 
-    ////doraditi klase da nacin da omoguce izvrsenje naredne linije koda
-    //KaratePolaznik* jasminPolaznik = dynamic_cast<KaratePolaznik*>(jasmin);
+    //doraditi klase da nacin da omoguce izvrsenje naredne linije koda
+    KaratePolaznik* jasminPolaznik = dynamic_cast<KaratePolaznik*>(jasmin);
 
-    //if (jasminPolaznik != nullptr) {
-    //    if (jasminPolaznik->AddTehniku(ZUTI, gyaku_zuki))
-    //        cout << "Tehnika uspjesno dodan!" << crt;
-    //    //ne treba dodati kizami_zuki jer ne postoje evidentirane 3 tehnike za ZUTI pojas
+    if (jasminPolaznik != nullptr) {
+        if (jasminPolaznik->AddTehniku(ZUTI, gyaku_zuki))
+            cout << "Tehnika uspjesno dodan!" << crt;
+        //ne treba dodati kizami_zuki jer ne postoje evidentirane 3 tehnike za ZUTI pojas
     //    if (!jasminPolaznik->AddTehniku(NARANDZASTI, kizami_zuki))
     //        cout << "Tehnika NIJE uspjesno dodana!" << crt;
     //    if (jasminPolaznik->AddTehniku(ZUTI, choku_zuki))
