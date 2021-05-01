@@ -135,6 +135,16 @@ public:
         COUT << *obj._dan << "." << *obj._mjesec << "." << *obj._godina;
         return COUT;
     }
+
+    friend bool operator< (Datum& d1, Datum& d2) {
+        if (*d1._godina < *d2._godina) 
+            return true;
+        if (*d1._godina == *d2._godina)
+            if (*d1._mjesec < *d2._mjesec) return true;
+        if (*d1._mjesec == *d2._mjesec)
+            if (*d1._dan < *d2._dan) return true;
+        return false;
+    }
 };
 int razlikaDana(Datum& d1, Datum& d2) {
     return abs(d1.brojDana() - d2.brojDana());
@@ -157,18 +167,30 @@ public:
         int trenutno = _ocjene->getTrenutno();
         for (int i = 0; i < trenutno; i++) {
             if(trenutno!=0 && (razlikaDana(datum,_ocjene->getElement2(trenutno-1)) < 3 )) return false;
+            if (datum < _ocjene->getElement2(i)) return false;
         }
         _ocjene->AddElement(ocjena, datum);
         return true;
     }
     char* GetNaziv() { return _naziv; }
+    float GetProsjek()const {
+        float prosjek = 0;
+        for (int i = 0; i < _ocjene->getTrenutno(); i++) {
+            prosjek = prosjek + float(_ocjene->getElement1(i));
+        }
+
+        return  prosjek / float(_ocjene->getTrenutno());
+    }
     Kolekcija<int, Datum, brojTehnika>& GetOcjene() { return *_ocjene; }
     friend ostream& operator<< (ostream& COUT, const Tehnika& obj) {
+        
+       
         COUT << obj._naziv << endl;
         COUT << "----Ocjene----"  << endl;
         for (int i = 0; i < obj._ocjene->getTrenutno();i++) {
             COUT << "Datuma " << obj._ocjene->getElement2(i);
             COUT << " je ocjenjen sa:" << obj._ocjene->getElement1(i) << endl;
+            COUT << "Prosjek ocjene je: " << obj.GetProsjek() <<endl;
         }
         return COUT;
     }
@@ -346,6 +368,8 @@ void main() {
         cout << "Ocjena NIJE evidentirana!" << endl;
     if (choku_zuki.AddOcjena(5, datum30062020))
         cout << "Ocjena evidentirana!" << endl;
+    if (choku_zuki.AddOcjena(5, datum20062020))
+        cout << "Ocjena NIJE evidentirana!" << endl;
 
     /* ispisuje: naziv tehnike, ocjene (zajedno sa datumom) i prosjecnu ocjenu za tu tehniku
        ukoliko tehnika nema niti jednu ocjenu prosjecna treba biti 0*/
