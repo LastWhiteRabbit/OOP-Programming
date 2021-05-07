@@ -159,6 +159,10 @@ public:
         _naziv = GetNizKaraktera(naziv);
         _ocjene = new Kolekcija<int, Datum, brojTehnika>();
     }
+    Tehnika(const Tehnika& t):_naziv(GetNizKaraktera(t._naziv)){
+
+        _ocjene = new Kolekcija<int, Datum, brojTehnika>(*t._ocjene);
+    }
     ~Tehnika() {
         delete[] _naziv; _naziv = nullptr;
         delete _ocjene; _ocjene = nullptr;
@@ -204,6 +208,12 @@ public:
     Polaganje(Pojas pojas = BIJELI) {
         _pojas = pojas;
     }
+    Polaganje(const Polaganje& p) {
+        _pojas = p._pojas;
+        for (int i = 0; i < _polozeneTehnike.size(); i++) {
+            _polozeneTehnike.push_back(new Tehnika(*p._polozeneTehnike[i]));
+        }
+    }
     ~Polaganje() {
         for (size_t i = 0; i < _polozeneTehnike.size(); i++) {
             delete _polozeneTehnike[i];
@@ -242,6 +252,7 @@ public:
     string GetEmail() { return _emailAdresa; }
     string GetLozinka() { return _lozinka; }
     char* GetImePrezime() { return _imePrezime; }
+    virtual void Info() = 0;
 };
 
 class KaratePolaznik: public Korisnik {
@@ -252,9 +263,19 @@ public:
     virtual ~KaratePolaznik() {
         cout << crt << "DESTRUKTOR -> KaratePolaznik" << crt;
     }
-    bool AddTehniku(Pojas p, Tehnika& t) {
+    virtual void Info() {};
+
+    bool AddTehniku(Pojas pojas, Tehnika& tehnika) {
     
-    
+        for (int i = 0; i < _polozeniPojasevi.size(); i++) {
+            if (_polozeniPojasevi[i].GetTehnike().size() < 3) return false;
+        }
+       
+        Polaganje p(pojas);
+        p.GetTehnike().push_back(new Tehnika(tehnika));
+        _polozeniPojasevi.push_back(p);
+        return true;
+         
     }
     friend ostream& operator<< (ostream& COUT, KaratePolaznik& obj) {
         COUT << obj.GetImePrezime() << " " << obj.GetEmail() << " " << obj.GetLozinka() << endl;
@@ -263,6 +284,7 @@ public:
         return COUT;
     }
     vector<Polaganje>& GetPolozeniPojasevi() { return _polozeniPojasevi; }
+    
 };
 
 
@@ -426,18 +448,18 @@ void main() {
         if (jasminPolaznik->AddTehniku(ZUTI, gyaku_zuki))
             cout << "Tehnika uspjesno dodan!" << crt;
         //ne treba dodati kizami_zuki jer ne postoje evidentirane 3 tehnike za ZUTI pojas
-    //    if (!jasminPolaznik->AddTehniku(NARANDZASTI, kizami_zuki))
-    //        cout << "Tehnika NIJE uspjesno dodana!" << crt;
-    //    if (jasminPolaznik->AddTehniku(ZUTI, choku_zuki))
-    //        cout << "Tehnika uspjesno dodan!" << crt;
-    //    //ne treba dodati choku_zuki jer je vec dodana za zuti pojas
-    //    if (!jasminPolaznik->AddTehniku(ZUTI, choku_zuki))
-    //        cout << "Tehnika NIJE uspjesno dodana!" << crt;
+        if (!jasminPolaznik->AddTehniku(NARANDZASTI, kizami_zuki))
+            cout << "Tehnika NIJE uspjesno dodana!" << crt;
+        if (jasminPolaznik->AddTehniku(ZUTI, choku_zuki))
+            cout << "Tehnika uspjesno dodan!" << crt;
+        //ne treba dodati choku_zuki jer je vec dodana za zuti pojas
+        if (!jasminPolaznik->AddTehniku(ZUTI, choku_zuki))
+            cout << "Tehnika NIJE uspjesno dodana!" << crt;
 
-    //    //ispisuje sve dostupne podatke o karate polazniku
-    //    cout << *jasminPolaznik << crt;
-    //}
-
+        //ispisuje sve dostupne podatke o karate polazniku
+        cout << *jasminPolaznik << crt;
+        }
+    
     ///*nakon evidentiranja tehnike na bilo kojem pojasu kandidatu se salje email sa porukom:
     //FROM:info@karate.ba
     //TO: emailKorisnika
@@ -449,9 +471,9 @@ void main() {
     //*/
 
     ////osigurati da se u narednim linijama poziva i destruktor klase KaratePolaznik
-    //delete jasmin;
-    //delete adel;
-    //delete emailNijeValidan;
+    delete jasmin;
+    delete adel;
+    delete emailNijeValidan;
 
     cin.get();
     system("pause>0");
