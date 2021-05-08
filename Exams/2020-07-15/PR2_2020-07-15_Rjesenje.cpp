@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <mutex>
+#include <thread>
 
 using namespace std;
 
@@ -22,6 +24,7 @@ const char* PORUKA = "\n--------------------------------------------------------
 
 const char* crt = "\n-------------------------------------------\n";
 enum Pojas { BIJELI, ZUTI, NARANDZASTI, ZELENI, PLAVI, SMEDJI, CRNI };
+string PojasString[] = { "BIJELI", "ZUTI", "NARANDZASTI", "ZELENI", "PLAVI", "SMEDJI", "CRNI" };
 const int brojTehnika = 6;
 const char* NIJE_VALIDNA = "<VRIJEDNOST_NIJE_VALIDNA>";
 
@@ -177,6 +180,7 @@ public:
         _ocjene->AddElement(ocjena, datum);
         return true;
     }
+
     char* GetNaziv() { return _naziv; }
     float GetProsjek()const {
         float prosjek = 0;
@@ -199,6 +203,10 @@ public:
         }
         return COUT;
     }
+    bool operator==(const Tehnika& druga)
+    {
+        return strcmp(_naziv, druga._naziv) == 0;
+    }
 };
 
 class Polaganje {
@@ -219,6 +227,14 @@ public:
             delete _polozeneTehnike[i];
             _polozeneTehnike[i] = nullptr;
         }
+    }
+    float getProsjek()
+    {
+        float prosjek = 0;
+        for (auto& tehnika : _polozeneTehnike)
+            prosjek += tehnika->GetProsjek();
+        if (_polozeneTehnike.size() == 0) return 0;
+        return prosjek / _polozeneTehnike.size();
     }
     vector<Tehnika*>& GetTehnike() { return _polozeneTehnike; }
     Pojas GetPojas() { return _pojas; }
@@ -255,6 +271,7 @@ public:
     virtual void Info() = 0;
 };
 
+mutex m;
 class KaratePolaznik: public Korisnik {
     vector<Polaganje> _polozeniPojasevi;
 public:
@@ -265,15 +282,66 @@ public:
     }
     virtual void Info() {};
 
+    float getProsjek()
+    {
+        float prosjek = 0;
+        for (auto& p : _polozeniPojasevi)
+            prosjek += p.getProsjek();
+        if (_polozeniPojasevi.size() == 0) return 0;
+        return prosjek / _polozeniPojasevi.size();
+    }
+    void Ispis(Tehnika tehnika, Pojas pojas, Polaganje p)
+    {
+        m.lock();
+        cout << "FROM:info@karate.ba\nTO: " << GetEmail() << "\n\nPostovani " << GetImePrezime() << ", evidentirana vam je tehnika " << tehnika.GetNaziv() << " za " << PojasString[pojas] << " pojas.\n";
+        cout << "Dosadasnji uspjeh (prosjek ocjena) na pojasu " << PojasString[pojas] << " iznosi " << p.getProsjek() << ", a ukupni uspjeh (prosjek ocjena) na svim pojasevima iznosi " << getProsjek();
+        cout << "\nPozdrav.\n\nKARATE Team.\n";
+        m.unlock();
+    }
+    bool PostojeLiIsti(Pojas pojas, Tehnika& tehnika)
+    {
+        for (int i = 0; i < _polozeniPojasevi.size(); i++)
+        {
+            if (_polozeniPojasevi[i].GetPojas() == pojas)
+            {
+                for (int j = 0; j < _polozeniPojasevi[i].GetTehnike().size(); j++)
+                {
+                    if (*_polozeniPojasevi[i].GetTehnike()[j] == tehnika)
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
     bool AddTehniku(Pojas pojas, Tehnika& tehnika) {
     
-        for (int i = 0; i < _polozeniPojasevi.size(); i++) {
-            if (_polozeniPojasevi[i].GetTehnike().size() < 3) return false;
+        for (int i = 0; i < _polozeniPojasevi.size(); i++)
+        {
+            //ako je proslijedjeni pojas visi od prethodnog pojasa i ( taj prethodni pojas ima manje od tri tehnike ili prosjek tog pojasa je manji od 3.5) ne treba dodati 
+            if (pojas > _polozeniPojasevi[i].GetPojas() && (_polozeniPojasevi[i].GetTehnike().size() < 3 || _polozeniPojasevi[i].getProsjek() < 3.5))
+                return false;
+
+            if (_polozeniPojasevi[i].GetPojas() == pojas)
+            {
+                if (PostojeLiIsti(pojas, tehnika))
+                    return false;
+
+                _polozeniPojasevi[i].GetTehnike().push_back(new Tehnika(tehnika));
+                //prvi parametar lokacija funkcije koja je zaduzena za slanje maila, drugi parametar na koji objekat se odnosi tj. na this jer se Polazniku salje mail
+                //naredni parametri su oni koji se traze u ispisu(ako se ne traze ne salje se nista)
+                thread saljemMail(&KaratePolaznik::Ispis, this, pojas, tehnika);
+                //obavezno za svaki thread mora se join-at glavnom programu OBAVEZNO!
+                saljemMail.join();
+                return true;
+            }
         }
        
         Polaganje p(pojas);
         p.GetTehnike().push_back(new Tehnika(tehnika));
         _polozeniPojasevi.push_back(p);
+        thread t1(&KaratePolaznik::Ispis, this, tehnika, pojas, p);
+        t1.join();
         return true;
          
     }
@@ -460,17 +528,17 @@ void main() {
         cout << *jasminPolaznik << crt;
         }
     
-    ///*nakon evidentiranja tehnike na bilo kojem pojasu kandidatu se salje email sa porukom:
-    //FROM:info@karate.ba
-    //TO: emailKorisnika
-    //Postovani ime i prezime, evidentirana vam je thenika X za Y pojas. Dosadasnji uspjeh (prosjek ocjena)
-    //na pojasu Y iznosi F, a ukupni uspjeh (prosjek ocjena) na svim pojasevima iznosi Z.
-    //Pozdrav.
-    //KARATE Team.
-    //slanje email poruka implemenitrati koristeci zasebne thread-ove.
-    //*/
+    /*nakon evidentiranja tehnike na bilo kojem pojasu kandidatu se salje email sa porukom:
+    FROM:info@karate.ba
+    TO: emailKorisnika
+    Postovani ime i prezime, evidentirana vam je thenika X za Y pojas. Dosadasnji uspjeh (prosjek ocjena)
+    na pojasu Y iznosi F, a ukupni uspjeh (prosjek ocjena) na svim pojasevima iznosi Z.
+    Pozdrav.
+    KARATE Team.
+    slanje email poruka implemenitrati koristeci zasebne thread-ove.
+    */
 
-    ////osigurati da se u narednim linijama poziva i destruktor klase KaratePolaznik
+    //osigurati da se u narednim linijama poziva i destruktor klase KaratePolaznik
     delete jasmin;
     delete adel;
     delete emailNijeValidan;
