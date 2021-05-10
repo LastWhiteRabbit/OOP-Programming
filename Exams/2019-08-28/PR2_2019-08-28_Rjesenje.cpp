@@ -38,10 +38,12 @@ public:
 	}
 	Kolekcija& operator=(const Kolekcija& k) {
 		if (this != &k) {
+
+			delete[] _elementi1; delete[] _elementi2;
+			
 			_trenutno = k._trenutno;
 			_omoguciDupliranje = k._omoguciDupliranje;
 
-			delete[] _elementi1; delete[] _elementi2;
 
 			_elementi1 = new T1[_trenutno];
 			_elementi2 = new T2[_trenutno];
@@ -53,11 +55,7 @@ public:
 		}
 		return *this;
 	}
-	~Kolekcija() {
-		delete[]_elementi1; _elementi1 = nullptr;
-		delete[]_elementi2; _elementi2 = nullptr;
-	}
-	void AddElement(const T1& el1, const T2& el2) {
+	void AddElement( T1 el1,  T2 el2) {
 
 		if (!_omoguciDupliranje)
 			for (int i = 0; i < _trenutno; i++)
@@ -70,12 +68,18 @@ public:
 			temp1[i] = _elementi1[i];
 			temp2[i] = _elementi2[i];
 		}
-		temp1[_trenutno] = el1;
-		temp2[_trenutno++] = el2;
-		delete _elementi1; delete _elementi2;
+		delete[] _elementi1; delete[] _elementi2;
 
+		temp1[_trenutno] = el1;
+		temp2[_trenutno] = el2;
+		_trenutno++;	
+		
 		_elementi1 = temp1;
 		_elementi2 = temp2;
+	}
+	~Kolekcija() {
+		delete[]_elementi1; _elementi1 = nullptr;
+		delete[]_elementi2; _elementi2 = nullptr;
 	}
 	void SortirajRastuci(SortirajPo T) {
 
@@ -130,6 +134,13 @@ public:
 		_sati = new int(sati);
 		_minuti = new int(minuti);
 	}
+	DatumVrijeme(const DatumVrijeme& obj) {
+		_dan = new int(*obj._dan);
+		_mjesec = new int(*obj._mjesec);
+		_godina = new int(*obj._godina);
+		_sati = new int(*obj._sati);
+		_minuti = new int(*obj._minuti);
+	}
 	~DatumVrijeme() {
 		delete _dan; _dan = nullptr;
 		delete _mjesec; _mjesec = nullptr;
@@ -141,12 +152,13 @@ public:
 		COUT << *obj._dan << "." << *obj._mjesec << "." << *obj._godina << " " << *obj._sati << ":" << *obj._minuti << endl;
 		return COUT;
 	}
-	DatumVrijeme(const DatumVrijeme& obj) {
-		_dan = new int(*obj._dan);
-		_mjesec = new int(*obj._mjesec);
-		_godina = new int(*obj._godina);
-		_sati = new int(*obj._sati);
-		_minuti = new int(*obj._minuti);
+	friend bool operator==(const DatumVrijeme& d1, const DatumVrijeme& d2) {
+		if (d1._dan == d2._dan &&
+			d1._mjesec == d2._mjesec &&
+			d1._godina == d2._godina &&
+			d1._sati == d2._sati &&
+			d1._minuti == d2._minuti)
+			return true;
 	}
 };
 
@@ -160,6 +172,7 @@ public:
 		_ocjena = ocjena;
 		_napomena = napomena;
 	}
+	Predmet(const Predmet& p): _naziv(Alociraj(p._naziv)),_ocjena(p._ocjena),_napomena(p._napomena) {}
 
 	~Predmet() {
 		delete[] _naziv; _naziv = nullptr;
@@ -175,6 +188,9 @@ public:
 	void DodajNapomenu(string napomena) {
 		_napomena += " " + napomena;
 	}
+	friend bool operator==(const Predmet& p1, const Predmet& p2) {
+		return strcmp(p1._naziv, p2._naziv) == 0;
+	}
 };
 
 class Uspjeh {
@@ -184,6 +200,10 @@ class Uspjeh {
 public:
 	Uspjeh(eRazred razred) {
 		_razred = new eRazred(razred);
+	}
+	Uspjeh(const Uspjeh& u):_predmeti(u._predmeti) {
+		
+		_razred = u._razred;
 	}
 	~Uspjeh() { delete _razred; _razred = nullptr; }
 
@@ -213,10 +233,19 @@ public:
 			_emailAdresa = "notSet@edu.fit.ba";
 		_brojTelefona = brojTelefona;
 	}
+	Kandidat(const Kandidat& k):_imePrezime(Alociraj(k._imePrezime)),_uspjeh(k._uspjeh),_emailAdresa(k._emailAdresa),
+								_brojTelefona(k._brojTelefona){}
 	~Kandidat() {
 		delete[] _imePrezime; _imePrezime = nullptr;
 	}
-	bool AddPredmet(const eRazred razred, Predmet &p, DatumVrijeme& d) {
+	bool AddPredmet( eRazred razred, Predmet &p, DatumVrijeme& d) {
+		for (int i = 0; i < _uspjeh.size(); i++) {
+
+		}
+		Uspjeh u(razred);
+		u.GetPredmeti()->AddElement(p, d);
+		_uspjeh.push_back(u);
+		return true;
 
 	}
 	friend ostream& operator<< (ostream& COUT, Kandidat& obj) {
@@ -301,16 +330,16 @@ void main() {
 		cout << "Predmet uspjesno dodan!" << crt;
 	if (jasmin.AddPredmet(DRUGI, Hemija, datum30062019_1215))
 		cout << "Predmet uspjesno dodan!" << crt;
-	if (jasmin.AddPredmet(PRVI, Engleski, datum19062019_1015))
-		cout << "Predmet uspjesno dodan!" << crt;
-	if (jasmin.AddPredmet(PRVI, Matematika, datum20062019_1115))
-		cout << "Predmet uspjesno dodan!" << crt;
-	//ne treba dodati Matematiku jer je vec dodana u prvom razredu
-	if (jasmin.AddPredmet(PRVI, Matematika, datum05072019_1231))
-		cout << "Predmet uspjesno dodan!" << crt;
-	//ne treba dodati Fiziku jer nije proslo 5 minuta od dodavanja posljednjeg predmeta
-	if (jasmin.AddPredmet(PRVI, Fizika, datum20062019_1115))
-		cout << "Predmet uspjesno dodan!" << crt;
+	//if (jasmin.AddPredmet(PRVI, Engleski, datum19062019_1015))
+	//	cout << "Predmet uspjesno dodan!" << crt;
+	//if (jasmin.AddPredmet(PRVI, Matematika, datum20062019_1115))
+	//	cout << "Predmet uspjesno dodan!" << crt;
+	////ne treba dodati Matematiku jer je vec dodana u prvom razredu
+	//if (jasmin.AddPredmet(PRVI, Matematika, datum05072019_1231))
+	//	cout << "Predmet uspjesno dodan!" << crt;
+	////ne treba dodati Fiziku jer nije proslo 5 minuta od dodavanja posljednjeg predmeta
+	//if (jasmin.AddPredmet(PRVI, Fizika, datum20062019_1115))
+	//	cout << "Predmet uspjesno dodan!" << crt;
 	///*nakon evidentiranja uspjeha na bilo kojem predmetu kandidatu se salje email sa porukom:
 	//FROM:info@edu.fit.ba
 	//TO: emailKorisnika
