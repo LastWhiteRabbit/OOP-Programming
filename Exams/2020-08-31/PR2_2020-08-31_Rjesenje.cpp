@@ -1,22 +1,4 @@
-const char* PORUKA = "\n-------------------------------------------------------------------------------\n"
-"0. PROVJERITE DA LI PREUZETI ZADACI PRIPADAJU VASOJ GRUPI (G1/G2)\n"
-"1. SVE KLASE TREBAJU POSJEDOVATI ADEKVATAN DESTRUKTOR\n"
-"2. NAMJERNO IZOSTAVLJANJE KOMPLETNIH I/ILI POJEDINIH DIJELOVA DESTRUKTORA CE BITI OZNACENO KAO TM\n"
-"3. SPASAVAJTE PROJEKAT KAKO BI SE SPRIJECILO GUBLJENJE URADJENOG ZADATKA\n"
-"4. ATRIBUTI, NAZIVI FUNKCIJA, TE BROJ I TIP PARAMETARA MORAJU BITI IDENTICNI ONIMA KOJI SU KORISTENI U TESTNOM CODE-U,\n"
-"\tOSIM U SLUCAJU DA POSTOJI ADEKVATAN RAZLOG ZA NJIHOVU MODIFIKACIJU. OSTALE\n"
-"\tPOMOCNE FUNKCIJE MOZETE IMENOVATI I DODAVATI PO ZELJI.\n"
-"5. IZUZETAK BACITE SAMO U FUNKCIJAMA U KOJIMA JE TO NAZNACENO.\n"
-"6. FUNKCIJE KOJE NE IMPLEMENTIRATE TREBAJU BITI OBRISANE (KAKO POZIV TAKO I DEFINICIJA)!\n"
-"7. NA KRAJU ISPITA SVOJE RJESENJE KOPIRATE U .DOCX FAJL (IMENOVAN BROJEM INDEKSA)!\n"
-"8. RJESENJA ZADATKA POSTAVITE NA FTP SERVER U ODGOVARAJUCI FOLDER!\n"
-"9. NEMOJTE POSTAVLJATI VISUAL STUDIO PROJEKTE, VEC SAMO .DOCX FAJL SA VASIM RJESENJEM!\n"
-"-------------------------------------------------------------------------------\n";
-
-const char* crt = "\n-------------------------------------------\n";
-enum Predmet { UIT, PRI, PRII, PRIII, RSI, RSII };
-enum Dupliranje { SA_DUPLIKATIMA, BEZ_DUPLIKATA };
-const char* NIJE_VALIDNA = "<VRIJEDNOST_NIJE_VALIDNA>";#include <iostream>
+#include <iostream>
 #include <vector>
 #include <string>
 
@@ -66,13 +48,37 @@ public:
         _elementi2 = nullptr;
         _dupliranje = dupliranje;
     }
-
-    ~Kolekcija() {
-        delete _trenutno; _trenutno = nullptr;
-        delete[] _elementi1; _elementi1 = nullptr;
-        delete[] _elementi2; _elementi2 = nullptr;
+    Kolekcija(const Kolekcija& k):_trenutno(new int(*k._trenutno)),_dupliranje(k._dupliranje) {
+        _elementi1 = new T1[*_trenutno];
+        _elementi2 = new T2[*_trenutno];
+       
+            
+        for (int i = 0; i < *_trenutno; i++) {
+            _elementi1[i] = k._elementi1[i];
+            _elementi2[i] = k._elementi2[i];
+        }
     }
-    void AddElement(const T1& el1, const T2& el2) {
+    Kolekcija& operator=(const Kolekcija& k) {
+
+        if (this != &k) {
+            delete[] _elementi1; delete[] _elementi2;
+
+            *_trenutno = *k._trenutno;
+            
+            _elementi1 = new T1[*_trenutno];
+            _elementi2 = new T2[*_trenutno];
+
+            for (int i = 0; i < *_trenutno; i++) {
+                _elementi1[i] = k._elementi1[i];
+                _elementi2[i] = k._elementi2[i];
+            }
+
+        }
+        return *this;
+    }
+
+
+    void AddElement(T1 el1, T2 el2) {
         if (_dupliranje == BEZ_DUPLIKATA)
             for (int i = 0; i < *_trenutno; i++)
                 if (_elementi1[i] == el1 && _elementi2[i] == el2) throw exception("Zabranjeno dupliranje");
@@ -96,6 +102,11 @@ public:
         (*_trenutno)++;
 
     }
+    ~Kolekcija() {
+        delete _trenutno; _trenutno = nullptr;
+        delete[] _elementi1; _elementi1 = nullptr;
+        delete[] _elementi2; _elementi2 = nullptr;
+    }
     T1 getElement1(int lokacija)const { return _elementi1[lokacija]; }
     T2 getElement2(int lokacija)const { return _elementi2[lokacija]; }
     int getTrenutno()const { return *_trenutno; }
@@ -103,6 +114,14 @@ public:
         for (size_t i = 0; i < *obj._trenutno; i++)
             COUT << obj.getElement1(i) << " " << obj.getElement2(i) << endl;
         return COUT;
+    }
+    Kolekcija operator[](T1 el) {
+        Kolekcija temp;
+        for (int i = 0; i < *_trenutno; i++) 
+            if (_elementi1[i] == el)
+                temp.AddElement(_elementi1[i], _elementi2[i]);
+
+        return temp;
     }
 };
 class Datum {
@@ -123,6 +142,10 @@ public:
         delete _mjesec; _mjesec = nullptr;
         delete _godina; _godina = nullptr;
     }
+
+    int toDane() {
+        return *_godina * 365 + *_mjesec * 30 + *_dan;
+    }
     friend ostream& operator<< (ostream& COUT, const Datum& obj) {
         COUT << *obj._dan << "." << *obj._mjesec << "." << *obj._godina;
         return COUT;
@@ -134,20 +157,63 @@ class Pitanje {
     char* _sadrzaj;
     //int se odnosi na ocjenu u opsegu  1 – 5, a Datum na datum kada je odgovor/rjesenje ocijenjeno
     Kolekcija<int, Datum*> _ocjeneRjesenja;
+
+
 public:
     Pitanje(const char* sadrzaj = "") {
         _sadrzaj = GetNizKaraktera(sadrzaj);
     }
+    Pitanje(const Pitanje& p):_sadrzaj(GetNizKaraktera(p._sadrzaj)),_ocjeneRjesenja(p._ocjeneRjesenja) {     
+    }
+    Pitanje& operator=(const Pitanje& drugi)
+    {
+        if (this != &drugi)
+        {
+            delete[] _sadrzaj;
+            _sadrzaj = GetNizKaraktera(drugi._sadrzaj);
+            _ocjeneRjesenja = drugi._ocjeneRjesenja;
+        }
+        return *this;
+    }
     ~Pitanje() {
         delete[] _sadrzaj; _sadrzaj = nullptr;
     }
+    bool AddOcjena(int ocjena,Datum& datum) {
+
+        if (ocjena > 5 || ocjena < 1) return false;
+
+        for (int i = 0; i < _ocjeneRjesenja.getTrenutno(); i++) {
+
+            if (datum.toDane()<_ocjeneRjesenja.getElement2(i)->toDane()) return false;
+            if (datum.toDane() - _ocjeneRjesenja.getElement2(i)->toDane()  < 3) return false;
+        }
+        _ocjeneRjesenja.AddElement(ocjena, &datum);
+        return true;
+    }
+    float getProsjek() const {
+        float prosjek = 0;
+        for (int i = 0; i < _ocjeneRjesenja.getTrenutno(); i++) {
+            prosjek = prosjek + _ocjeneRjesenja.getElement1(i);
+        }
+        return prosjek / _ocjeneRjesenja.getTrenutno();
+    }
+
     char* GetSadrzaj() { return _sadrzaj; }
     Kolekcija<int, Datum*>& GetOcjene() { return _ocjeneRjesenja; }
     friend ostream& operator<< (ostream& COUT, const Pitanje& obj) {
         COUT << "Pitanje: " << obj._sadrzaj << endl;
-        COUT << "Ocjene: " << obj._ocjeneRjesenja << endl;
+        for (int i = 0; i < obj._ocjeneRjesenja.getTrenutno(); i++) {
+            COUT << "Ocjene: " << obj._ocjeneRjesenja.getElement1(i) << " Datum: " << *obj._ocjeneRjesenja.getElement2(i) << endl;
+        }
+        COUT << "Prosjek: " << obj.getProsjek() << endl;         
+       
         return COUT;
     }
+   bool operator==(Pitanje& drugo)
+    {
+        return strcmp(_sadrzaj, drugo._sadrzaj) == 0;
+    }
+
 };
 
 class Ispit {
@@ -181,6 +247,7 @@ public:
         _emailAdresa = emailAdresa;
         _lozinka = ValidirajLozinku(lozinka) ? lozinka : NIJE_VALIDNA;
     }
+    
     virtual ~Korisnik() { delete[] _imePrezime; _imePrezime = nullptr; }
     string GetEmail() { return _emailAdresa; }
     string GetLozinka() { return _lozinka; }
@@ -197,6 +264,17 @@ public:
         for (size_t i = 0; i < _polozeniPredmeti.size(); i++)
             delete _polozeniPredmeti[i];
     }
+ 
+    bool AddPitanje(Predmet predmet,Pitanje& pitanje, string napomena = "") {
+        for (int i = 0; i < _polozeniPredmeti.size(); i++) {
+
+
+        }
+        Ispit i(predmet);
+        i.GetPitanjaOdgovore().AddElement(pitanje, napomena);
+        _polozeniPredmeti.push_back(new Ispit(i));
+        return true;
+    }
     friend ostream& operator<< (ostream& COUT, Kandidat& obj) {
         COUT << obj.GetImePrezime() << " " << obj.GetEmail() << " " << obj.GetLozinka() << endl;
         for (size_t i = 0; i < obj._polozeniPredmeti.size(); i++)
@@ -205,7 +283,7 @@ public:
     }
     vector<Ispit*>& GetPolozeniPredmeti() { return _polozeniPredmeti; }
 
-    virtual void Info();
+    void Info() {};
 
 };
 const char* GetOdgovorNaPrvoPitanje() {
@@ -250,43 +328,43 @@ void main() {
     }
     cout << kolekcija1 << crt;
 
-    //Kolekcija<int, int> kolekcija2;
-    //kolekcija2 = kolekcija1;
-    //cout << kolekcija2 << crt;
+    Kolekcija<int, int> kolekcija2;
+    kolekcija2 = kolekcija1;
+    cout << kolekcija2 << crt;
 
-    ///*na osnovu vrijednosti tip T1 (u primjeru vrijednost 1) pronalazi i vraca iz kolekcije sve parove
-    //koji kao vrijednost T1 imaju proslijedjenu vrijednost*/
-    //cout << kolekcija1[1] << crt;
-    ///* npr. ako unutar kolekcije postoje parovi:
-    //0 0
-    //1 9
-    //1 1
-    //2 2
-    //3 3
-    //ispis dobijenih/vracenih vrijednosti ce biti sljedeci:
-    //1 9
-    //1 1
-    //*/
+    /*na osnovu vrijednosti tip T1 (u primjeru vrijednost 1) pronalazi i vraca iz kolekcije sve parove
+    koji kao vrijednost T1 imaju proslijedjenu vrijednost*/
+    cout << kolekcija1[1] << crt;
+    /* npr. ako unutar kolekcije postoje parovi:
+    0 0
+    1 9
+    1 1
+    2 2
+    3 3
+    ispis dobijenih/vracenih vrijednosti ce biti sljedeci:
+    1 9
+    1 1
+    */
 
-    //Pitanje sortiranjeNiza("Navedite algoritme za sortiranje clanova niza."),
-    //    dinamickaMemorija("Navedite pristupe za upravljanje dinamickom memorijom."),
-    //    visenitnoProgramiranje("Na koji se sve nacin moze koristiti veci broj niti tokom izvrsenja programa."),
-    //    regex("Navedite par primjera regex validacije podataka.");
+    Pitanje sortiranjeNiza("Navedite algoritme za sortiranje clanova niza."),
+        dinamickaMemorija("Navedite pristupe za upravljanje dinamickom memorijom."),
+        visenitnoProgramiranje("Na koji se sve nacin moze koristiti veci broj niti tokom izvrsenja programa."),
+        regex("Navedite par primjera regex validacije podataka.");
 
-    ///*svako pitanje moze imati vise ocjena tj. razlicita rjesenja/odgovori se mogu postaviti u vise navrata.
-    //    -   razmak izmedju postavljanja dva rjesenja mora biti najmanje 3 dana
-    //    -   nije dozvoljeno dodati ocjenu sa ranijim datumom u odnosu na vec evidentirane (bez obzira sto je stariji od 3 dana)
-    //*/
-    //if (sortiranjeNiza.AddOcjena(1, datum19062020))
-    //    cout << "Ocjena evidentirana!" << endl;
-    //if (!sortiranjeNiza.AddOcjena(5, datum20062020))
-    //    cout << "Ocjena NIJE evidentirana!" << endl;
-    //if (sortiranjeNiza.AddOcjena(5, datum30062020))
-    //    cout << "Ocjena evidentirana!" << endl;
+    /*svako pitanje moze imati vise ocjena tj. razlicita rjesenja/odgovori se mogu postaviti u vise navrata.
+        -   razmak izmedju postavljanja dva rjesenja mora biti najmanje 3 dana
+        -   nije dozvoljeno dodati ocjenu sa ranijim datumom u odnosu na vec evidentirane (bez obzira sto je stariji od 3 dana)
+    */
+    if (sortiranjeNiza.AddOcjena(1, datum19062020))
+        cout << "Ocjena evidentirana!" << endl;
+    if (!sortiranjeNiza.AddOcjena(5, datum20062020))
+        cout << "Ocjena NIJE evidentirana!" << endl;
+    if (sortiranjeNiza.AddOcjena(5, datum30062020))
+        cout << "Ocjena evidentirana!" << endl;
 
-    //// ispisuje sadrzaj/tekst pitanja, ocjene (zajedno sa datumom) i prosjecnu ocjenu za sve odgovore/rjesenja
-    // // ukoliko pitanje nema niti jednu ocjenu prosjecna treba biti 0
-    //cout << sortiranjeNiza << endl;
+    // ispisuje sadrzaj/tekst pitanja, ocjene (zajedno sa datumom) i prosjecnu ocjenu za sve odgovore/rjesenja
+     // ukoliko pitanje nema niti jednu ocjenu prosjecna treba biti 0
+    cout << sortiranjeNiza << endl;
 
     //if (ValidirajLozinku("*2gT2x"))
     //    cout << "Lozinka validna" << endl;
@@ -301,60 +379,62 @@ void main() {
     //if (!ValidirajLozinku("-1a T2l"))
     //    cout << "Lozinka NIJE validna" << endl;
 
-    ///*
-    //za autentifikaciju svaki korisnik mora posjedovati lozinku koja sadrzi 6 ili 7 znakova postujuci sljedeca pravila:
-    //-   pocinje sa znak * (zvjezdica) ili _ (donja crtica), nakon cega slijedi
-    //-   broj, nakon cega slijedi
-    //-   malo slovo, nakon cega slijedi
-    //-   razmak koji NIJE OBAVEZAN, nakon cega slijedi
-    //-   veliko slovo, nakon cega slijedi
-    //-   broj, nakon cega slijedi
-    //-   malo slovo.
-    //za provjeru validnosti lozinke koristiti globalnu funkciju ValidirajLozinku, a unutar nje regex metode.
-    //validacija lozinke se vrsi unutar konstruktora klase Korisnik, a u slucaju da nije validna
-    //postaviti je na podrazumijevanu vrijednost: <VRIJEDNOST_NIJE_VALIDNA>
-    //*/
+    /*
+    za autentifikaciju svaki korisnik mora posjedovati lozinku koja sadrzi 6 ili 7 znakova postujuci sljedeca pravila:
+    -   pocinje sa znak * (zvjezdica) ili _ (donja crtica), nakon cega slijedi
+    -   broj, nakon cega slijedi
+    -   malo slovo, nakon cega slijedi
+    -   razmak koji NIJE OBAVEZAN, nakon cega slijedi
+    -   veliko slovo, nakon cega slijedi
+    -   broj, nakon cega slijedi
+    -   malo slovo.
+    za provjeru validnosti lozinke koristiti globalnu funkciju ValidirajLozinku, a unutar nje regex metode.
+    validacija lozinke se vrsi unutar konstruktora klase Korisnik, a u slucaju da nije validna
+    postaviti je na podrazumijevanu vrijednost: <VRIJEDNOST_NIJE_VALIDNA>
+    */
 
-    //Korisnik* jasmin = new Kandidat("Jasmin Azemovic", "jasmin@kursevi.ba", "*2gT2x");
-    //Korisnik* adel = new Kandidat("Adel Handzic", "adel@edu.kursevi.ba", "_6gU9z");
-    //Korisnik* lozinkaNijeValidna = new Kandidat("John Doe", "john.doe@google.com", "johndoe");
+    Korisnik* jasmin = new Kandidat("Jasmin Azemovic", "jasmin@kursevi.ba", "*2gT2x");
+    Korisnik* adel = new Kandidat("Adel Handzic", "adel@edu.kursevi.ba", "_6gU9z");
+    Korisnik* lozinkaNijeValidna = new Kandidat("John Doe", "john.doe@google.com", "johndoe");
 
-    ///*
-    //svi odgovori na nivou jednog predmeta (PRI, PRII... ) se evidentiraju unutar istog objekta tipa Ispit tj. pripadajuceg objekta tipa Pitanje,
-    //tom prilikom onemoguciti:
-    //- dodavanje istih (moraju biti identicne vrijednosti svih atributa) odgovora na nivou jednog predmeta,
-    //- dodavanje odgovora za visi predmet ako prethodni predmet nema evidentirana najmanje 3 pitanja ili nema prosjecnu ocjenu svih pitanja vecu od 3.5
-    //(onemoguciti dodavanje pitanja za PRII ako ne postoje najmanje 3 pitanja za predmet PRI ili njihov prosjek nije veci od 3.5)
-    //funkcija vraca true ili false u zavisnosti od (ne)uspjesnost izvrsenja
-    //*/
+    /*
+    svi odgovori na nivou jednog predmeta (PRI, PRII... ) se evidentiraju unutar istog objekta tipa
+    Ispit tj. pripadajuceg objekta tipa Pitanje,
+    tom prilikom onemoguciti:
+    - dodavanje istih (moraju biti identicne vrijednosti svih atributa) odgovora na nivou jednog predmeta,
+    - dodavanje odgovora za visi predmet ako prethodni predmet nema evidentirana najmanje 3 pitanja ili nema prosjecnu ocjenu 
+    svih pitanja vecu od 3.5
+    (onemoguciti dodavanje pitanja za PRII ako ne postoje najmanje 3 pitanja za predmet PRI ili njihov prosjek nije veci od 3.5)
+    funkcija vraca true ili false u zavisnosti od (ne)uspjesnost izvrsenja
+    */
 
-    ////ukoliko je potrebno, doraditi klase da nacin da omoguce izvrsenje naredne linije koda
-    //Kandidat* jasminPolaznik = dynamic_cast<Kandidat*>(jasmin);
+    //ukoliko je potrebno, doraditi klase da nacin da omoguce izvrsenje naredne linije koda
+    Kandidat* jasminPolaznik = dynamic_cast<Kandidat*>(jasmin);
 
-    //if (jasminPolaznik != nullptr) {
-    //    if (jasminPolaznik->AddPitanje(PRI, dinamickaMemorija, "nedostaje operator delete"))
-    //        cout << "Pitanje uspjesno dodano!" << crt;
-    //    //ne treba dodati visenitnoProgramiranje jer ne postoje evidentirana 3 pitanja za predmet PRI
-    //    if (!jasminPolaznik->AddPitanje(PRII, visenitnoProgramiranje))
-    //        cout << "Pitanje NIJE uspjesno dodano!" << crt;
-    //    if (jasminPolaznik->AddPitanje(PRI, visenitnoProgramiranje))
-    //        cout << "Pitanje uspjesno dodano!" << crt;
-    //    if (jasminPolaznik->AddPitanje(PRI, regex, "unutar posljednjeg dijela nedostaje opis glavnih operatora"))
-    //        cout << "Pitanje uspjesno dodano!" << crt;
-    //    if (jasminPolaznik->AddPitanje(PRI, sortiranjeNiza))
-    //        cout << "Pitanje uspjesno dodano!" << crt;
-    //    //ne treba dodati sortiranjeNiza jer je vec dodana za predmet PRI
-    //    if (!jasminPolaznik->AddPitanje(PRI, sortiranjeNiza))
-    //        cout << "Pitanje NIJE uspjesno dodano!" << crt;
+    if (jasminPolaznik != nullptr) {
+        if (jasminPolaznik->AddPitanje(PRI, dinamickaMemorija, "nedostaje operator delete"))
+            cout << "Pitanje uspjesno dodano!" << crt;
+        //ne treba dodati visenitnoProgramiranje jer ne postoje evidentirana 3 pitanja za predmet PRI
+        if (!jasminPolaznik->AddPitanje(PRII, visenitnoProgramiranje))
+            cout << "Pitanje NIJE uspjesno dodano!" << crt;
+        if (jasminPolaznik->AddPitanje(PRI, visenitnoProgramiranje))
+            cout << "Pitanje uspjesno dodano!" << crt;
+        if (jasminPolaznik->AddPitanje(PRI, regex, "unutar posljednjeg dijela nedostaje opis glavnih operatora"))
+            cout << "Pitanje uspjesno dodano!" << crt;
+        if (jasminPolaznik->AddPitanje(PRI, sortiranjeNiza))
+            cout << "Pitanje uspjesno dodano!" << crt;
+        //ne treba dodati sortiranjeNiza jer je vec dodana za predmet PRI
+        if (!jasminPolaznik->AddPitanje(PRI, sortiranjeNiza))
+            cout << "Pitanje NIJE uspjesno dodano!" << crt;
 
-    //    //ispisuje sve dostupne podatke o kandidatu
-    //    cout << *jasminPolaznik << crt;
+        //ispisuje sve dostupne podatke o kandidatu
+        cout << *jasminPolaznik << crt;
 
     //    //vraca broj ponavljanja odredjene rijeci unutar napomena nastalih tokom polaganja ispita.
     //    int brojPonavljanja = (*jasminPolaznik)("nedostaje");
     //    cout << "Rijec nedostaje se ponavlja " << brojPonavljanja << " puta." << endl;
 
-    //}
+    }
     ///*nakon evidentiranja ocjene na bilo kojem odgovoru, kandidatu se salje email sa porukom:
     //FROM:info@kursevi.ba
     //TO: emailKorisnika
@@ -365,9 +445,9 @@ void main() {
     //slanje email poruka implemenitrati koristeci zasebne thread-ove.
     //*/
 
-    //delete jasmin;
-    //delete adel;
-    //delete lozinkaNijeValidna;
+    delete jasmin;
+    delete adel;
+    delete lozinkaNijeValidna;
 
     cin.get();
     system("pause>0");
