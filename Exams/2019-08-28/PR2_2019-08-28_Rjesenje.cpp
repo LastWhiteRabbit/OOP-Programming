@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <regex>
 
 using namespace std;
 
@@ -265,10 +266,15 @@ class Kandidat {
 		cout << "Svaka cast za uspjeh " << prosjek << " u " << eraz[raz] << " razredu" << endl;
 		m.unlock();
 	}
+	string ValidateEmail(string email)
+	{
+		if (regex_match(email, regex("([a-z]+)([_.a-z0-9]*)([a-z0-9]+)(@)(outlook.com|edu.fit.ba)"))) return email;
+		return "notSet@edu.fit.ba";
+	}
 public:
 	Kandidat(const char* imePrezime, string emailAdresa, string brojTelefona) {
 		_imePrezime = Alociraj(imePrezime);
-		_emailAdresa = emailAdresa;
+		_emailAdresa = ValidateEmail(emailAdresa);
 		_brojTelefona = brojTelefona;
 	}
 	Kandidat(const Kandidat& k):_imePrezime(Alociraj(k._imePrezime)) {
@@ -344,6 +350,7 @@ public:
 		}
 		return nullptr;
 	}
+
 
 
 	vector<Uspjeh>* GetUspjeh() { return &_uspjeh; }
@@ -446,7 +453,7 @@ void main() {
 	*/
 	cout << "USPJEH ISPISATI KORISTECI OSTREAM_ITERATOR" << endl;
 	cout << jasmin << endl;
-	////vraca broj ponavljanja odredjene rijeci u napomenama, koristiti sregex_iterator
+	//vraca broj ponavljanja odredjene rijeci u napomenama, koristiti sregex_iterator
 	//cout << "Rijec takmicenje se pojavljuje " << jasmin.BrojPonavljanjaRijeci("takmicenju") << " puta." << endl;
 
 	//vraca niz predmeta koji su evidentiranih u periodu izmedju vrijednosti proslijedjenih parametara

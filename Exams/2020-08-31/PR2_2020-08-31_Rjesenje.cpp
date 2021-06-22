@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <regex>
 
 using namespace std;
 
@@ -35,6 +36,11 @@ char* GetNizKaraktera(const char* sadrzaj, bool dealociraj = false) {
         delete[]sadrzaj;
     return temp;
 }
+bool ValidirajLozinku(string lozinka)
+{
+
+    return regex_match(lozinka, regex("(?=.{6,7})[*_][0-9][a-z][\\ ]?[A-Z][0-9][a-z]"));
+}
 
 template<class T1, class T2>
 class Kolekcija {
@@ -49,7 +55,7 @@ public:
         _elementi2 = nullptr;
         _dupliranje = dupliranje;
     }
-    Kolekcija(const Kolekcija& k):_dupliranje(k._dupliranje),_trenutno(new int(*k._trenutno)) {
+    Kolekcija(const Kolekcija& k) :_dupliranje(k._dupliranje), _trenutno(new int(*k._trenutno)) {
         _elementi1 = new T1[*_trenutno];
         _elementi2 = new T2[*_trenutno];
 
@@ -58,25 +64,25 @@ public:
             _elementi2[i] = k._elementi2[i];
         }
     }
-    void AddElement( T1 el1,  T2 el2) {
+    void AddElement(T1 el1, T2 el2) {
         if (_dupliranje == BEZ_DUPLIKATA)
             for (int i = 0; i < *_trenutno; i++)
                 if (_elementi1[i] == el1 && _elementi2[i] == el2) throw exception("Zabranjeno dupliranje");
-            T1* temp1 = new T1[*_trenutno + 1];
-            T2* temp2 = new T2[*_trenutno + 1];
-            for (int i = 0; i < *_trenutno; i++) {
-                temp1[i] = _elementi1[i];
-                temp2[i] = _elementi2[i];
-            }
-            temp1[*_trenutno] = el1;
-            temp2[*_trenutno] = el2;
+        T1* temp1 = new T1[*_trenutno + 1];
+        T2* temp2 = new T2[*_trenutno + 1];
+        for (int i = 0; i < *_trenutno; i++) {
+            temp1[i] = _elementi1[i];
+            temp2[i] = _elementi2[i];
+        }
+        temp1[*_trenutno] = el1;
+        temp2[*_trenutno] = el2;
 
-            delete[] _elementi1; delete[] _elementi2;
+        delete[] _elementi1; delete[] _elementi2;
 
-            _elementi1 = temp1;
-            _elementi2 = temp2;
-            (*_trenutno)++;
-        
+        _elementi1 = temp1;
+        _elementi2 = temp2;
+        (*_trenutno)++;
+
     }
     Kolekcija& operator=(const Kolekcija& k) {
         if (this != &k) {
@@ -112,7 +118,7 @@ public:
         for (int i = 0; i < *_trenutno; i++) {
             if (_elementi1[i] == el)
                 temp.AddElement(_elementi1[i], _elementi2[i]);
-         }
+        }
         return temp;
     }
 };
@@ -168,9 +174,9 @@ public:
     ~Pitanje() {
         delete[] _sadrzaj; _sadrzaj = nullptr;
     }
-    bool AddOcjena(int ocjena,  Datum& d) {
+    bool AddOcjena(int ocjena, Datum& d) {
         for (int i = 0; i < _ocjeneRjesenja.getTrenutno(); i++) {
-            if(d.toDane() - _ocjeneRjesenja.getElement2(i)->toDane() < 3) return false;
+            if (d.toDane() - _ocjeneRjesenja.getElement2(i)->toDane() < 3) return false;
             if (d.toDane() < _ocjeneRjesenja.getElement2(i)->toDane()) return false;
         }
 
@@ -180,7 +186,7 @@ public:
     }
     char* GetSadrzaj() { return _sadrzaj; }
     Kolekcija<int, Datum*>& GetOcjene() { return _ocjeneRjesenja; }
-    
+
     float getProsjek() {
         float prosjek = 0;
         for (int i = 0; i < _ocjeneRjesenja.getTrenutno(); i++) {
@@ -191,12 +197,12 @@ public:
 
     friend ostream& operator<< (ostream& COUT, const Pitanje& obj) {
         float prosjek = 0;
-        
-        COUT << "SADRZAJ-->"<<obj._sadrzaj << endl;
+
+        COUT << "SADRZAJ-->" << obj._sadrzaj << endl;
         for (int i = 0; i < obj._ocjeneRjesenja.getTrenutno(); i++) {
             prosjek = prosjek + obj._ocjeneRjesenja.getElement1(i);
-            COUT << "OCJENE-->" << obj._ocjeneRjesenja.getElement1(i) << "DATUM-->"<<*obj._ocjeneRjesenja.getElement2(i)  << endl;
-            }
+            COUT << "OCJENE-->" << obj._ocjeneRjesenja.getElement1(i) << "DATUM-->" << *obj._ocjeneRjesenja.getElement2(i) << endl;
+        }
         COUT << "PROSJEK-->" << prosjek / obj._ocjeneRjesenja.getTrenutno();
         return COUT;
     }
@@ -227,9 +233,6 @@ class Korisnik {
     char* _imePrezime;
     string _emailAdresa;
     string _lozinka;
-    bool ValidirajLozinku(string lozinka) {
-        return true;
-    }
 public:
     Korisnik(const char* imePrezime, string emailAdresa, string lozinka)
     {
@@ -259,15 +262,15 @@ class Kandidat : public Korisnik {
 
     void slanjeMaila() {
 
-    /*FROM:info@kursevi.ba
-        TO : emailKorisnika
-        Postovani ime i prezime, evidentirana vam je ocjena X za odgovor na pitanje Y.Dosadasnji uspjeh(prosjek ocjena)
-        za pitanje Y iznosi F, a ukupni uspjeh(prosjek ocjena) na svim predmetima iznosi Z.
-        Pozdrav.
-        EDUTeam.*/
+        /*FROM:info@kursevi.ba
+            TO : emailKorisnika
+            Postovani ime i prezime, evidentirana vam je ocjena X za odgovor na pitanje Y.Dosadasnji uspjeh(prosjek ocjena)
+            za pitanje Y iznosi F, a ukupni uspjeh(prosjek ocjena) na svim predmetima iznosi Z.
+            Pozdrav.
+            EDUTeam.*/
         m.lock();
         cout << "FROM:info@kursevi.ba" << endl << "TO: " << GetEmail() << endl << "Postovani " << GetImePrezime()
-        << ", evidenirana vam je ocjena X za odgovor na pitanje Y ";
+            << ", evidenirana vam je ocjena X za odgovor na pitanje Y ";
         cout << "Dosadasnji uspjeh je: " << endl;
         m.unlock();
     }
@@ -279,23 +282,23 @@ public:
             delete _polozeniPredmeti[i];
     }
     bool postojeIsti(Predmet predmet, Pitanje pitanje) {
-        for (int i = 0; i < _polozeniPredmeti.size(); i++) 
-            if (_polozeniPredmeti[i]->GetPredmet() == predmet) 
-                for (int j = 0; j < _polozeniPredmeti[i]->GetPitanjaOdgovore().getTrenutno(); j++) 
+        for (int i = 0; i < _polozeniPredmeti.size(); i++)
+            if (_polozeniPredmeti[i]->GetPredmet() == predmet)
+                for (int j = 0; j < _polozeniPredmeti[i]->GetPitanjaOdgovore().getTrenutno(); j++)
                     if (_polozeniPredmeti[i]->GetPitanjaOdgovore().getElement1(j) == pitanje) return true;
         return false;
     }
 
- 
-    bool AddPitanje(const Predmet& predmet,const Pitanje& pitanje, string odgovor = " ") {
+
+    bool AddPitanje(const Predmet& predmet, const Pitanje& pitanje, string odgovor = " ") {
 
         if (postojeIsti(predmet, pitanje)) return false;
         for (int i = 0; i < _polozeniPredmeti.size(); i++) {
             //if (_polozeniPredmeti[i]->GetPitanjaOdgovore().getElement1(i).getProsjek() < 3.5) return false;
             if (predmet > _polozeniPredmeti[i]->GetPredmet() && _polozeniPredmeti[i]->GetPitanjaOdgovore().getTrenutno() < 3) return false;
-            
+
         }
-        
+
         Ispit* temp = new Ispit(predmet);
         temp->GetPitanjaOdgovore().AddElement(pitanje, odgovor);
         _polozeniPredmeti.push_back(temp);
@@ -309,7 +312,7 @@ public:
             COUT << *obj._polozeniPredmeti[i];
         return COUT;
     }
-    
+
     vector<Ispit*>& GetPolozeniPredmeti() { return _polozeniPredmeti; }
     void Info() {};
     int operator()(string rijec) {
@@ -396,18 +399,18 @@ void main() {
      // ukoliko pitanje nema niti jednu ocjenu prosjecna treba biti 0
     cout << sortiranjeNiza << endl;
 
-    //if (ValidirajLozinku("*2gT2x"))
-    //    cout << "Lozinka validna" << endl;
-    //if (ValidirajLozinku("*7aT2x"))
-    //    cout << "Lozinka validna" << endl;
-    //if (ValidirajLozinku("_6gU9z"))
-    //    cout << "Lozinka validna" << endl;
-    //if (ValidirajLozinku("*3aB1y"))
-    //    cout << "Lozinka validna" << endl;
-    //if (ValidirajLozinku("*1a T2l"))
-    //    cout << "Lozinka validna" << endl;
-    //if (!ValidirajLozinku("-1a T2l"))
-    //    cout << "Lozinka NIJE validna" << endl;
+    if (ValidirajLozinku("*2gT2x"))
+        cout << "Lozinka validna" << endl;
+    if (ValidirajLozinku("*7aT2x"))
+        cout << "Lozinka validna" << endl;
+    if (ValidirajLozinku("_6gU9z"))
+        cout << "Lozinka validna" << endl;
+    if (ValidirajLozinku("*3aB1y"))
+        cout << "Lozinka validna" << endl;
+    if (ValidirajLozinku("*1a T2l"))
+        cout << "Lozinka validna" << endl;
+    if (!ValidirajLozinku("-1a T2l"))
+        cout << "Lozinka NIJE validna" << endl;
 
     /*
     za autentifikaciju svaki korisnik mora posjedovati lozinku koja sadrzi 6 ili 7 znakova postujuci sljedeca pravila:
