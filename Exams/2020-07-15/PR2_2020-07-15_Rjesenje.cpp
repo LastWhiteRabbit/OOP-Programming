@@ -38,6 +38,19 @@ char* GetNizKaraktera(const char* sadrzaj, bool dealociraj = false) {
 	return temp;
 }
 
+bool ValidirajLozinku(string lozinka)
+{
+	regex reg1("[A-Z]"),
+		reg2("[a-z]"),
+		reg3("[0-9]"),
+		reg4("[^a-zA-Z0-9]"),
+		reg5(".{7,}");
+	if (regex_search(lozinka, reg1) && regex_search(lozinka, reg2) && regex_search(lozinka, reg3) &&
+		regex_search(lozinka, reg4) && regex_search(lozinka, reg5)) return true;
+	return false;
+	
+}
+
 template<class T1, class T2, int max = 10>
 class Kolekcija {
 	T1* _elementi1[max] = { nullptr };
@@ -63,7 +76,7 @@ public:
 	void AddElement(const T1& el1, const T2& el2, int lokacija = -1)
 	{
 		if (_trenutno == max) throw exception("Dostignut maksimalan broj elemenata");
-		if (lokacija != -1 && lokacija>=0 && lokacija <= _trenutno) // Ako je -1 onda treci parametar nije poslan, ostale dvije provjere su da se provjere da li je u granicama
+		if (lokacija != -1 && lokacija >= 0 && lokacija <= _trenutno) // Ako je -1 onda treci parametar nije poslan, ostale dvije provjere su da se provjere da li je u granicama
 		{ // ako je lokacija == _trenutno i to je u redu jer tada cemo samo dodati element na zadnje mjesto
 			_elementi1[_trenutno] = new T1; // Alociramo memoriju za zadnji element da se ne bi desio runtime error
 			_elementi2[_trenutno] = new T2;
@@ -84,7 +97,7 @@ public:
 	}
 	void RemoveAt(int lokacija)
 	{
-		for (int i = lokacija; i < _trenutno - 1; i++) 
+		for (int i = lokacija; i < _trenutno - 1; i++)
 		{
 			*_elementi1[i] = *_elementi1[i + 1];
 			*_elementi2[i] = *_elementi2[i + 1];
@@ -250,10 +263,6 @@ public:
 	}
 };
 
-bool ValidirajLozinku(string lozinka)
-{
-	return regex_match(lozinka, regex("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*\\W)[A-Za-z\\d\\W]{7,}")); // \W 
-}
 class Korisnik {
 	char* _imePrezime;
 	string _emailAdresa;
@@ -272,15 +281,15 @@ public:
 	virtual void info() = 0;
 };
 mutex m;
-class KaratePolaznik : public Korisnik{
+class KaratePolaznik : public Korisnik {
 	vector<Polaganje> _polozeniPojasevi;
 public:
-	KaratePolaznik(const char* imePrezime, string emailAdresa, string lozinka) : Korisnik(imePrezime,emailAdresa,lozinka){
+	KaratePolaznik(const char* imePrezime, string emailAdresa, string lozinka) : Korisnik(imePrezime, emailAdresa, lozinka) {
 	}
 	virtual ~KaratePolaznik() {
 		cout << crt << "DESTRUKTOR -> KaratePolaznik" << crt;
 	}
-	virtual void info(){}
+	virtual void info() {}
 	///*
 	///*nakon evidentiranja tehnike na bilo kojem pojasu kandidatu se salje email sa porukom:
 
@@ -357,12 +366,12 @@ const char* GetOdgovorNaDrugoPitanje() {
 void main() {
 
 	cout << PORUKA;
-//	cin.get();
+	//	cin.get();
 
 	cout << GetOdgovorNaPrvoPitanje() << endl;
-//	cin.get();
+	//	cin.get();
 	cout << GetOdgovorNaDrugoPitanje() << endl;
-//	cin.get();
+	//	cin.get();
 
 	Datum   datum19062020(19, 6, 2020),
 		datum20062020(20, 6, 2020),
@@ -382,7 +391,7 @@ void main() {
 		dodati vise od maksimalnog broja elemenata*/
 		kolekcija1.AddElement(11, 11);
 	}
-	catch (exception & err) {
+	catch (exception& err) {
 		cout << crt << "Greska -> " << err.what() << crt;
 	}
 	cout << kolekcija1 << crt;
@@ -472,7 +481,7 @@ void main() {
 	if (ValidirajLozinku("@john2Doe"))
 		cout << "OK" << crt;
 
-	
+
 	//za provjeru validnosti lozinke koristiti globalnu funkciju ValidirajLozinku, a unutar nje regex metode.
 	//validacija lozinke se vrsi unutar konstruktora klase Korisnik, a u slucaju da nije validna
 	//postaviti je na podrazumijevanu vrijednost: <VRIJEDNOST_NIJE_VALIDNA>

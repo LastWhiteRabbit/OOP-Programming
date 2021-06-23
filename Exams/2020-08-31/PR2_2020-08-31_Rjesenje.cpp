@@ -316,7 +316,13 @@ public:
     vector<Ispit*>& GetPolozeniPredmeti() { return _polozeniPredmeti; }
     void Info() {};
     int operator()(string rijec) {
-        return 0;
+        regex reg(rijec);
+        int brojac = 0;
+        for(int i =0;i<_polozeniPredmeti.size();i++)
+            for(int j=0;j<_polozeniPredmeti[i]->GetPitanjaOdgovore().getTrenutno();j++)
+                if(regex_search(_polozeniPredmeti[i]->GetPitanjaOdgovore().getElement2(j),reg))
+                    brojac++;
+        return brojac;
     }
 };
 const char* GetOdgovorNaPrvoPitanje() {
