@@ -73,37 +73,32 @@ public:
 			delete _elementi2[i]; _elementi2[i] = nullptr;
 		}
 	}
-	void AddElement(const T1& el1, const T2& el2, int lokacija = -1)
-	{
-		if (_trenutno == max) throw exception("Dostignut maksimalan broj elemenata");
-		if (lokacija != -1 && lokacija >= 0 && lokacija <= _trenutno) // Ako je -1 onda treci parametar nije poslan, ostale dvije provjere su da se provjere da li je u granicama
-		{ // ako je lokacija == _trenutno i to je u redu jer tada cemo samo dodati element na zadnje mjesto
-			_elementi1[_trenutno] = new T1; // Alociramo memoriju za zadnji element da se ne bi desio runtime error
-			_elementi2[_trenutno] = new T2;
-			for (int i = _trenutno; i >= lokacija; i--) // Prebacujemo sve elemente od lokacije do kraja niza
-			{
-				*_elementi1[i] = *_elementi1[i - 1];
-				*_elementi2[i] = *_elementi2[i - 1];
-			}
-			*_elementi1[lokacija] = el1; // Na lokaciju dodajemo novi par elemenata
-			*_elementi2[lokacija] = el2;
-			_trenutno++;
-		}
-		else
-		{
-			_elementi1[_trenutno] = new T1(el1);
-			_elementi2[_trenutno++] = new T2(el2);
-		}
-	}
-	void RemoveAt(int lokacija)
-	{
-		for (int i = lokacija; i < _trenutno - 1; i++)
-		{
-			*_elementi1[i] = *_elementi1[i + 1];
-			*_elementi2[i] = *_elementi2[i + 1];
-		}
-		_trenutno--;
-	}
+    void AddElement(T1 el1, T2 el2) {
+        if (_trenutno >= max) throw exception("Prekoracenje opsega!");
+        _elementi1[_trenutno] = new T1(el1);
+        _elementi2[_trenutno] = new T2(el2);
+        _trenutno++;
+    }
+    void RemoveAt(int lokacija) {
+        delete _elementi1[lokacija]; delete _elementi2[lokacija];
+        _elementi1[lokacija] = nullptr; _elementi2[lokacija] = nullptr;
+
+        for (int i = lokacija; i < _trenutno-1; i++) {
+            _elementi1[i] = _elementi1[i + 1];
+            _elementi2[i] = _elementi2[i + 1];
+        }
+        _trenutno--;
+    }
+    void AddElement(T1 el1, T2 el2, int lokacija) {
+        if (_trenutno >= max) throw exception("Prekoracenje opsega!");
+        for (int i = _trenutno; i > lokacija; i--) {
+            _elementi1[i] = _elementi1[i - 1];
+            _elementi2[i] = _elementi2[i - 1];
+        }
+        _elementi1[lokacija] = new T1(el1);
+        _elementi2[lokacija] = new T2(el2);
+        _trenutno++;
+    }
 	T2& operator[](T1 vrijednost)
 	{
 		for (int i = 0; i < _trenutno; i++)
